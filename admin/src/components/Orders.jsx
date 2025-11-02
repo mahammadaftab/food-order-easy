@@ -20,7 +20,7 @@ const Orders = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5000/api/v1/orders', config);
+      const res = await axios.get('http://localhost:5002/api/v1/orders', config);
       setOrders(res.data);
       setLoading(false);
     } catch (err) {
@@ -38,7 +38,8 @@ const Orders = () => {
         }
       };
 
-      const res = await axios.put(`http://localhost:5000/api/v1/orders/${id}/deliver`, {}, config);
+      const res = await axios.put(`http://localhost:5002/api/v1/orders/${id}/deliver`, {}, config);
+      
       // Update order status in state
       setOrders(orders.map(order => 
         order._id === id ? {...order, isDelivered: true, deliveredAt: res.data.data.deliveredAt} : order

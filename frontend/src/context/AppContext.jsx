@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import API from '../config/api';
+import { getWishlist, addToWishlist as addWishlistItem, removeFromWishlist as removeWishlistItem } from '../services/wishlistService';
 
 // Create context
 export const AppContext = createContext();
@@ -8,6 +9,7 @@ export const AppContext = createContext();
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [cartItems, setCartItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,9 +28,24 @@ export const AppProvider = ({ children }) => {
       const res = await API.get('/auth/me');
       setUser(res.data.data);
       setLoading(false);
+      
+      // Load wishlist if user is authenticated
+      if (res.data.data) {
+        loadWishlist();
+      }
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to load user');
       setLoading(false);
+    }
+  };
+
+  // Load wishlist
+  const loadWishlist = async () => {
+    try {
+      const res = await getWishlist();
+      setWishlistItems(res.data);
+    } catch (err) {
+      //setError(err.message);
     }
   };
 
@@ -39,6 +56,7 @@ export const AppProvider = ({ children }) => {
       const res = await API.post('/auth/register', userData);
       localStorage.setItem('token', res.data.token);
       setUser(res.data.data);
+      setWishlistItems([]);
       setLoading(false);
       return { success: true };
     } catch (err) {
@@ -56,6 +74,10 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('token', res.data.token);
       setUser(res.data.data);
       setLoading(false);
+      
+      // Load wishlist after login
+      loadWishlist();
+      
       return { success: true };
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Login failed');
@@ -68,6 +90,8 @@ export const AppProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    setCartItems([]);
+    setWishlistItems([]);
   };
 
   // Add item to cart
@@ -124,12 +148,38 @@ export const AppProvider = ({ children }) => {
     setCartItems([]);
   };
 
+  // Add item to wishlist
+  const addToWishlist = async (menuItemId) => {
+    try {
+      const res = await addWishlistItem(menuItemId);
+      setWishlistItems(res.data);
+      return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Remove item from wishlist
+  const removeFromWishlist = async (menuItemId) => {
+    try {
+      const res = await removeWishlistItem(menuItemId);
+      setWishlistItems(res.data);
+      return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    }
+  };
+
   // Context values
   const contextValue = {
     user,
     cartItems,
+    wishlistItems,
     loading,
     error,
+    setError,
     register,
     login,
     logout,
@@ -139,7 +189,10 @@ export const AppProvider = ({ children }) => {
     updateCartItemQuantity,
     getCartTotal,
     getCartItemCount,
-    clearCart
+    clearCart,
+    addToWishlist,
+    removeFromWishlist,
+    loadWishlist
   };
 
   return (

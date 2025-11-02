@@ -20,7 +20,7 @@ const ManageItems = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5000/api/v1/menu', config);
+      const res = await axios.get('http://localhost:5002/api/v1/menu', config);
       setMenuItems(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -39,7 +39,7 @@ const ManageItems = () => {
           }
         };
 
-        await axios.delete(`http://localhost:5000/api/v1/menu/${id}`, config);
+        await axios.delete(`http://localhost:5002/api/v1/menu/${id}`, config);
         // Remove item from state
         setMenuItems(menuItems.filter(item => item._id !== id));
       } catch (err) {

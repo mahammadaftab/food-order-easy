@@ -1,17 +1,30 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext.jsx';
 import { getMyOrders } from '../../services/orderService';
-import { FaUser, FaShoppingBag, FaCalendar, FaRupeeSign, FaCheckCircle, FaTruck, FaClock } from 'react-icons/fa';
+import { updateProfile } from '../../services/userService';
+import { FaUser, FaShoppingBag, FaCalendar, FaRupeeSign, FaCheckCircle, FaTruck, FaClock, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 
 const Profile = () => {
-  const { user, logout } = useContext(AppContext);
+  const { user, logout, loadUser } = useContext(AppContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: '',
+    email: ''
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     if (user) {
       loadOrders();
+      // Initialize edit data with current user info
+      setEditData({
+        name: user.name,
+        email: user.email
+      });
     }
   }, [user]);
 
@@ -28,6 +41,53 @@ const Profile = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditData({
+      name: user.name,
+      email: user.email
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditData({
+      name: user.name,
+      email: user.email
+    });
+    setError('');
+    setSuccess('');
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    try {
+      await updateProfile(editData);
+      // Refresh user data in context
+      await loadUser();
+      setIsEditing(false);
+      setSuccess('Profile updated successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess('');
+      }, 3000);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // Format date
@@ -109,49 +169,133 @@ const Profile = () => {
           <div className="lg:w-3/4">
             {activeTab === 'profile' && (
               <div className="bg-[#2D1B0E]/50 rounded-xl border border-amber-900/30 p-6">
-                <h2 className="text-2xl font-bold mb-6">My Profile</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block mb-2 text-amber-100/80">Full Name</label>
-                    <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
-                      {user.name}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-2 text-amber-100/80">Email Address</label>
-                    <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
-                      {user.email}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-2 text-amber-100/80">Member Since</label>
-                    <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
-                      {formatDate(user.createdAt)}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-2 text-amber-100/80">Account Type</label>
-                    <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
-                      {user.role === 'admin' ? 'Administrator' : 'Customer'}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-8">
-                  <h3 className="text-xl font-bold mb-4">Account Settings</h3>
-                  <div className="space-y-4">
-                    <button className="w-full md:w-auto bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">My Profile</h2>
+                  {!isEditing && (
+                    <button
+                      onClick={handleEditClick}
+                      className="flex items-center bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      <FaEdit className="mr-2" />
                       Edit Profile
                     </button>
-                    <button className="w-full md:w-auto bg-transparent border border-amber-600 text-amber-400 hover:bg-amber-600/20 px-6 py-3 rounded-lg font-medium transition-colors">
-                      Change Password
-                    </button>
-                  </div>
+                  )}
                 </div>
+                
+                {error && (
+                  <div className="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-lg mb-6">
+                    {error}
+                  </div>
+                )}
+                
+                {success && (
+                  <div className="bg-green-900/30 border border-green-700 text-green-400 px-4 py-3 rounded-lg mb-6">
+                    {success}
+                  </div>
+                )}
+                
+                {isEditing ? (
+                  <form onSubmit={handleSaveProfile}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block mb-2 text-amber-100/80">Full Name</label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={editData.name}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full bg-[#3c2a21] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 px-4 py-3 rounded-lg"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block mb-2 text-amber-100/80">Email Address</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={editData.email}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full bg-[#3c2a21] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 px-4 py-3 rounded-lg"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block mb-2 text-amber-100/80">Member Since</label>
+                        <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
+                          {formatDate(user.createdAt)}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block mb-2 text-amber-100/80">Account Type</label>
+                        <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
+                          {user.role === 'admin' ? 'Administrator' : 'Customer'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-8 flex flex-wrap gap-4">
+                      <button
+                        type="submit"
+                        className="flex items-center bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                      >
+                        <FaSave className="mr-2" />
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="flex items-center bg-transparent border border-amber-600 text-amber-400 hover:bg-amber-600/20 px-6 py-3 rounded-lg font-medium transition-colors"
+                      >
+                        <FaTimes className="mr-2" />
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block mb-2 text-amber-100/80">Full Name</label>
+                      <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
+                        {user.name}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-2 text-amber-100/80">Email Address</label>
+                      <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
+                        {user.email}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-2 text-amber-100/80">Member Since</label>
+                      <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
+                        {formatDate(user.createdAt)}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-2 text-amber-100/80">Account Type</label>
+                      <div className="bg-[#3c2a21] px-4 py-3 rounded-lg">
+                        {user.role === 'admin' ? 'Administrator' : 'Customer'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {!isEditing && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-bold mb-4">Account Settings</h3>
+                    <div className="space-y-4">
+                      <button className="w-full md:w-auto bg-transparent border border-amber-600 text-amber-400 hover:bg-amber-600/20 px-6 py-3 rounded-lg font-medium transition-colors">
+                        Change Password
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

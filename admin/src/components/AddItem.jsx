@@ -7,7 +7,7 @@ const AddItem = () => {
     description: '',
     price: '',
     category: 'appetizer',
-    image: '',
+    image: null,
     isPopular: false,
     isBestSeller: false,
     isSpecial: false,
@@ -17,6 +17,7 @@ const AddItem = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -24,6 +25,39 @@ const AddItem = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        image: file
+      }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (imageFile) => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    };
+    
+    const res = await axios.post('http://localhost:5002/api/v1/upload', formData, config);
+    return res.data.data;
   };
 
   const handleSubmit = async (e) => {
@@ -34,6 +68,26 @@ const AddItem = () => {
 
     try {
       const token = localStorage.getItem('token');
+      
+      // Upload image first
+      let imageUrl = '';
+      if (formData.image) {
+        imageUrl = await uploadImage(formData.image);
+      }
+
+      // Create menu item data
+      const menuItemData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        image: imageUrl,
+        isPopular: formData.isPopular,
+        isBestSeller: formData.isBestSeller,
+        isSpecial: formData.isSpecial,
+        rating: parseFloat(formData.rating)
+      };
+
       const config = {
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +95,7 @@ const AddItem = () => {
         }
       };
 
-      await axios.post('http://localhost:5000/api/v1/menu', formData, config);
+      await axios.post('http://localhost:5002/api/v1/menu', menuItemData, config);
       
       setSuccess(true);
       // Reset form
@@ -50,12 +104,13 @@ const AddItem = () => {
         description: '',
         price: '',
         category: 'appetizer',
-        image: '',
+        image: null,
         isPopular: false,
         isBestSeller: false,
         isSpecial: false,
         rating: 0
       });
+      setImagePreview(null);
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to add menu item');
     } finally {
@@ -150,14 +205,22 @@ const AddItem = () => {
               </div>
               
               <div className="md:col-span-2">
-                <label className="block mb-2 font-medium">Image URL</label>
+                <label className="block mb-2 font-medium">Upload Image</label>
                 <input
-                  type="text"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  className="w-full rounded-lg bg-[#3c2a21] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 px-4 py-3"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full rounded-lg bg-[#3c2a21] text-amber-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-700"
                 />
+                {imagePreview && (
+                  <div className="mt-4">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded-lg border border-amber-700"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             

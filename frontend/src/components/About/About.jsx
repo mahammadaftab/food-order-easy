@@ -1,10 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTwitter, FaInstagram, FaFacebookF, FaLinkedinIn, FaQuoteLeft } from 'react-icons/fa';
 import TestimonialSlider from '../Testimonial/TestimonialSlider';
-import { features, stats, teamMembers } from '../../assets/dummydata';
+import { features, stats } from '../../assets/dummydata';
+import { getChefs } from '../../services/chefService';
 
 const About = () => {
   const [hoveredStat, setHoveredStat] = useState(null);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadChefs();
+  }, []);
+
+  const loadChefs = async () => {
+    try {
+      setLoading(true);
+      const data = await getChefs();
+      setTeamMembers(data.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pt-24 pb-16 px-4 flex justify-center items-center">
+        <div className="text-amber-400 text-xl">Loading team members...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pt-24 pb-16 px-4 flex justify-center items-center">
+        <div className="text-red-400 text-xl">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 pb-16 px-4">
@@ -22,7 +58,7 @@ const About = () => {
             <div>
               <div className="relative rounded-3xl overflow-hidden border-8 border-amber-900/30 shadow-2xl">
                 <img 
-                  src={teamMembers[0]?.img || ''} 
+                  src={teamMembers[0]?.image || ''} 
                   alt="Our Restaurant" 
                   className="w-full h-96 object-cover"
                 />
@@ -38,13 +74,13 @@ const About = () => {
               </p>
               <div className="flex items-center">
                 <img 
-                  src={teamMembers[0]?.img || ''} 
+                  src={teamMembers[0]?.image || ''} 
                   alt="Marco Yansen" 
                   className="w-16 h-16 rounded-full object-cover"
                 />
                 <div className="ml-4">
-                  <h3 className="font-bold">Marco Yansen</h3>
-                  <p className="text-amber-400">Founder & CEO</p>
+                  <h3 className="font-bold">{teamMembers[0]?.name || 'Founder'}</h3>
+                  <p className="text-amber-400">{teamMembers[0]?.role || 'Founder & CEO'}</p>
                 </div>
               </div>
             </div>
@@ -99,47 +135,53 @@ const About = () => {
       <section className="py-16">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">Meet Our Culinary Masters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group">
-                <div className="relative">
-                  <img 
-                    src={member.img} 
-                    alt={member.name} 
-                    className="w-full h-80 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a120b] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold mb-2">{member.name}</h3>
-                  <p className="text-amber-400 mb-4">{member.role}</p>
-                  <p className="text-amber-100/80 mb-6">{member.bio}</p>
-                  <div className="flex justify-center space-x-4">
-                    {Object.entries(member.social).map(([platform, url]) => {
-                      const Icon = {
-                        twitter: FaTwitter,
-                        instagram: FaInstagram,
-                        facebook: FaFacebookF,
-                        linkedin: FaLinkedinIn
-                      }[platform] || FaFacebookF;
-                      
-                      return (
-                        <a 
-                          key={platform} 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-amber-400 hover:text-amber-300 transition-colors"
-                        >
-                          <Icon className="text-xl" />
-                        </a>
-                      );
-                    })}
+          {teamMembers.length === 0 ? (
+            <div className="text-center py-8 text-amber-100/80">
+              <p>No team members found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {teamMembers.map((member, index) => (
+                <div key={member._id || index} className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group">
+                  <div className="relative">
+                    <img 
+                      src={member.image} 
+                      alt={member.name} 
+                      className="w-full h-80 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a120b] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold mb-2">{member.name}</h3>
+                    <p className="text-amber-400 mb-4">{member.role}</p>
+                    <p className="text-amber-100/80 mb-6">{member.bio}</p>
+                    <div className="flex justify-center space-x-4">
+                      {Object.entries(member.social || {}).map(([platform, url]) => {
+                        const Icon = {
+                          twitter: FaTwitter,
+                          instagram: FaInstagram,
+                          facebook: FaFacebookF,
+                          linkedin: FaLinkedinIn
+                        }[platform] || FaFacebookF;
+                        
+                        return (
+                          <a 
+                            key={platform} 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-amber-400 hover:text-amber-300 transition-colors"
+                          >
+                            <Icon className="text-xl" />
+                          </a>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

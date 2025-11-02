@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { getMenuItems } from '../../services/menuService';
 import SearchBar from '../Search/SearchBar';
 import CategoryFilter from '../Category/CategoryFilter';
 import SkeletonLoader from '../Loading/SkeletonLoader';
-import { FaShoppingCart, FaStar, FaFire, FaCrown, FaTag } from 'react-icons/fa';
+import { AppContext } from '../../context/AppContext.jsx';
+import { FaShoppingCart, FaStar, FaFire, FaCrown, FaTag, FaPlus, FaHeart } from 'react-icons/fa';
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -12,6 +13,7 @@ const Menu = () => {
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { addToCart, addToWishlist, user } = useContext(AppContext);
 
   useEffect(() => {
     loadMenuItems();
@@ -43,6 +45,24 @@ const Menu = () => {
     );
     
     setFilteredItems(filtered);
+  };
+
+  const handleAddToCart = (item) => {
+    // Add item to cart with default quantity of 1
+    addToCart({ ...item, quantity: 1 });
+  };
+
+  const handleAddToWishlist = async (menuItemId) => {
+    if (!user) {
+      alert('Please login to add items to your wishlist');
+      return;
+    }
+    
+    try {
+      await addToWishlist(menuItemId);
+    } catch (err) {
+      alert('Failed to add item to wishlist');
+    }
   };
 
   const categories = [
@@ -146,6 +166,26 @@ const Menu = () => {
                         <FaStar className="text-amber-400" />
                         <span className="ml-1 font-medium">{item.rating}</span>
                         <span className="text-amber-100/60 text-sm ml-2">({item.numOfReviews})</span>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToWishlist(item._id);
+                          }}
+                          className="bg-amber-900 hover:bg-amber-800 text-white p-2 rounded-full transition-colors"
+                        >
+                          <FaHeart />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(item);
+                          }}
+                          className="bg-amber-600 hover:bg-amber-700 text-white p-2 rounded-full transition-colors"
+                        >
+                          <FaPlus />
+                        </button>
                       </div>
                     </div>
                   </div>

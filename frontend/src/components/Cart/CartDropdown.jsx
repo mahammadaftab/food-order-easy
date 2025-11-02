@@ -4,7 +4,7 @@ import { AppContext } from '../../context/AppContext.jsx';
 import { FaShoppingCart, FaTrash, FaTimes } from 'react-icons/fa';
 
 const CartDropdown = () => {
-  const { cartItems, removeFromCart, getCartTotal } = useContext(AppContext);
+  const { cartItems, removeFromCart, getCartTotal, getCartItemCount } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -22,6 +22,9 @@ const CartDropdown = () => {
     };
   }, []);
 
+  // Calculate total item count
+  const totalItems = getCartItemCount();
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
@@ -29,9 +32,9 @@ const CartDropdown = () => {
         className="relative p-2"
       >
         <FaShoppingCart className="text-xl" />
-        {cartItems.length > 0 && (
+        {totalItems > 0 && (
           <span className="absolute -top-1 -right-1 bg-amber-600 text-xs w-5 h-5 rounded-full flex items-center justify-center">
-            {cartItems.length}
+            {totalItems}
           </span>
         )}
       </button>
@@ -39,7 +42,7 @@ const CartDropdown = () => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-[#2D1B0E] border-2 border-amber-700 rounded-xl shadow-2xl z-50">
           <div className="p-4 border-b border-amber-900/30 flex justify-between items-center">
-            <h3 className="font-bold">Your Cart ({cartItems.length})</h3>
+            <h3 className="font-bold">Your Cart ({totalItems})</h3>
             <button 
               onClick={() => setIsOpen(false)}
               className="text-amber-400 hover:text-amber-300"

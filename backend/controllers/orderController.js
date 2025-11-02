@@ -105,7 +105,10 @@ const updateOrderToDelivered = asyncHandler(async (req, res, next) => {
 
     const updatedOrder = await order.save();
 
-    res.json(updatedOrder);
+    res.json({
+      success: true,
+      data: updatedOrder
+    });
   } else {
     return next(new ErrorResponse('Order not found', 404));
   }

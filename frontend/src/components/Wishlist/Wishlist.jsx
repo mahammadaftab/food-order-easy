@@ -1,38 +1,27 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext.jsx';
-import { FaHeart, FaTrash, FaArrowLeft, FaStar } from 'react-icons/fa';
+import { FaHeart, FaTrash, FaArrowLeft, FaStar, FaShoppingCart } from 'react-icons/fa';
 
 const Wishlist = () => {
-  const { user } = useContext(AppContext);
+  const { user, wishlistItems, removeFromWishlist, addToCart, loadWishlist } = useContext(AppContext);
+  const [loading, setLoading] = useState(true);
   
-  // Sample wishlist items (in a real app, this would come from context or API)
-  const wishlistItems = [
-    {
-      id: 1,
-      name: 'Chicken Tikka',
-      price: 140,
-      image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-      rating: 4.8,
-      description: 'Tender chicken marinated in yogurt and spices'
-    },
-    {
-      id: 2,
-      name: 'Paneer Tikka',
-      price: 220,
-      image: 'https://images.unsplash.com/photo-1631895150252-73d973a5a6a4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-      rating: 4.7,
-      description: 'Cottage cheese marinated in aromatic spices'
-    },
-    {
-      id: 3,
-      name: 'Masala Dosa',
-      price: 180,
-      image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-      rating: 4.5,
-      description: 'Crispy rice crepe with spicy potato filling'
+  useEffect(() => {
+    if (user) {
+      loadWishlist().then(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-  ];
+  }, [user]);
+
+  const handleRemoveFromWishlist = async (menuItemId) => {
+    await removeFromWishlist(menuItemId);
+  };
+
+  const handleAddToCart = (item) => {
+    addToCart({ ...item, quantity: 1 });
+  };
 
   if (!user) {
     return (
@@ -62,6 +51,14 @@ const Wishlist = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="pt-24 pb-16 px-4 flex justify-center items-center">
+        <div className="text-amber-400 text-xl">Loading wishlist...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-24 pb-16 px-4">
       <div className="max-w-7xl mx-auto">
@@ -70,7 +67,7 @@ const Wishlist = () => {
           <Link to="/menu" className="text-amber-400 hover:text-amber-300 transition-colors">Back to Menu</Link>
         </div>
         
-        <h1 className="text-4xl font-bold mb-8">Your Wishlist</h1>
+        <h1 className="text-4xl font-bold mb-8">Your Wishlist ({wishlistItems.length})</h1>
         
         {wishlistItems.length === 0 ? (
           <div className="text-center py-16">
@@ -87,9 +84,9 @@ const Wishlist = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {wishlistItems.map((item) => (
-              <div key={item.id} className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group">
+              <div key={item._id} className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group">
                 <div className="relative overflow-hidden">
-                  <Link to={`/menu/${item.id}`}>
+                  <Link to={`/menu/${item._id}`}>
                     <img 
                       src={item.image} 
                       alt={item.name} 
@@ -98,14 +95,17 @@ const Wishlist = () => {
                   </Link>
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a120b] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
-                  <button className="absolute top-3 right-3 bg-amber-600 text-white p-2 rounded-full shadow-lg hover:bg-amber-700 transition-colors">
+                  <button 
+                    onClick={() => handleRemoveFromWishlist(item._id)}
+                    className="absolute top-3 right-3 bg-amber-600 text-white p-2 rounded-full shadow-lg hover:bg-amber-700 transition-colors"
+                  >
                     <FaTrash />
                   </button>
                 </div>
                 
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-3">
-                    <Link to={`/menu/${item.id}`} className="text-xl font-semibold hover:text-amber-400 transition-colors">
+                    <Link to={`/menu/${item._id}`} className="text-xl font-semibold hover:text-amber-400 transition-colors">
                       {item.name}
                     </Link>
                     <span className="text-amber-400 font-bold text-lg">₹{item.price}</span>
@@ -118,7 +118,11 @@ const Wishlist = () => {
                       <FaStar className="text-amber-400" />
                       <span className="ml-1 font-medium">{item.rating}</span>
                     </div>
-                    <button className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <button 
+                      onClick={() => handleAddToCart(item)}
+                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center"
+                    >
+                      <FaShoppingCart className="mr-2" />
                       Add to Cart
                     </button>
                   </div>

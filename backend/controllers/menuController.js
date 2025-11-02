@@ -74,7 +74,7 @@ const deleteMenuItem = asyncHandler(async (req, res, next) => {
     );
   }
 
-  await menuItem.remove();
+  await menuItem.deleteOne();
 
   res.status(200).json({
     success: true,

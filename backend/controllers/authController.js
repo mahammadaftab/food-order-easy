@@ -60,34 +60,48 @@ const getMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Get token from model, create cookie and send response
+// @desc    Update user profile
+// @route   PUT /api/v1/auth/me
+// @access  Private
+const updateMe = asyncHandler(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    email: req.body.email
+  };
+
+  // Remove undefined fields
+  Object.keys(fieldsToUpdate).forEach(key => {
+    if (fieldsToUpdate[key] === undefined) {
+      delete fieldsToUpdate[key];
+    }
+  });
+
+  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true
+  });
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});
+
+// Get token from model and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();
 
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token,
-      data: user
-    });
+  res.status(statusCode).json({
+    success: true,
+    token,
+    data: user
+  });
 };
 
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  updateMe
 };
