@@ -35,7 +35,7 @@ const ManageChefs = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5002/api/v1/chefs', config);
+      const res = await axios.get('http://localhost:5001/api/v1/chefs', config);
       setChefs(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -94,7 +94,7 @@ const ManageChefs = () => {
       }
     };
     
-    const res = await axios.post('http://localhost:5002/api/v1/upload', formData, config);
+    const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
     return res.data.data;
   };
 
@@ -130,10 +130,10 @@ const ManageChefs = () => {
 
       if (editingChef) {
         // Update existing chef
-        await axios.put(`http://localhost:5002/api/v1/chefs/${editingChef._id}`, chefData, config);
+        await axios.put(`http://localhost:5001/api/v1/chefs/${editingChef._id}`, chefData, config);
       } else {
         // Create new chef
-        await axios.post('http://localhost:5002/api/v1/chefs', chefData, config);
+        await axios.post('http://localhost:5001/api/v1/chefs', chefData, config);
       }
 
       // Reset form and refresh data
@@ -186,7 +186,7 @@ const ManageChefs = () => {
           }
         };
 
-        await axios.delete(`http://localhost:5002/api/v1/chefs/${id}`, config);
+        await axios.delete(`http://localhost:5001/api/v1/chefs/${id}`, config);
         // Remove chef from state
         setChefs(chefs.filter(chef => chef._id !== id));
       } catch (err) {

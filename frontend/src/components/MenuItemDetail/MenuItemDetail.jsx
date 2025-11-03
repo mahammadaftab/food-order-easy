@@ -1,47 +1,29 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getMenuItemById } from '../../services/menuService';
+import { getMenuItemById, getMenuItems } from '../../services/menuService';
+import { getReviews } from '../../services/reviewService';
 import { AppContext } from '../../context/AppContext.jsx';
 import ReviewCard from '../Review/ReviewCard';
-import AddReview from '../Review/AddReview';
-import { FaStar, FaShoppingCart, FaPlus, FaMinus, FaArrowLeft, FaFire, FaCrown, FaHeart } from 'react-icons/fa';
+import AddReviewForm from '../Review/AddReviewForm';
+import { FaStar, FaShoppingCart, FaPlus, FaMinus, FaArrowLeft, FaFire, FaCrown, FaHeart, FaTag } from 'react-icons/fa';
 
 const MenuItemDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart, user } = useContext(AppContext);
+  const { addToCart, user, addToWishlist } = useContext(AppContext);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('medium');
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [reviews, setReviews] = useState([
-    {
-      user: "Sarah Johnson",
-      rating: 5,
-      comment: "Absolutely delicious! The flavors were incredible and the presentation was beautiful. Will definitely order again.",
-      date: "2023-05-15",
-      item: "Chicken Tikka"
-    },
-    {
-      user: "Michael Chen",
-      rating: 4,
-      comment: "Great taste and quick delivery. The chicken was tender and well-seasoned. Only reason for 4 stars is the portion could be slightly larger.",
-      date: "2023-05-10",
-      item: "Chicken Tikka"
-    },
-    {
-      user: "Emma Rodriguez",
-      rating: 5,
-      comment: "This is now my favorite dish! The spices were perfectly balanced and the meat was so juicy. Highly recommend!",
-      date: "2023-05-05",
-      item: "Chicken Tikka"
-    }
-  ]);
+  const [reviews, setReviews] = useState([]);
+  const [relatedItems, setRelatedItems] = useState([]);
 
   useEffect(() => {
     loadMenuItem();
+    loadReviews();
+    loadRelatedItems();
   }, [id]);
 
   const loadMenuItem = async () => {
@@ -53,6 +35,32 @@ const MenuItemDetail = () => {
     } catch (err) {
       setError(err.message);
       setLoading(false);
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const data = await getReviews(id);
+      setReviews(data.data);
+      console.log('Reviews loaded:', data.data);
+    } catch (err) {
+      console.error('Failed to load reviews', err);
+      // Set empty array if reviews fail to load
+      setReviews([]);
+    }
+  };
+
+  const loadRelatedItems = async () => {
+    try {
+      const data = await getMenuItems();
+      // Filter items from the same category, excluding the current item
+      const related = data.data
+        .filter(item => item._id !== id)
+        .slice(0, 4); // Limit to 4 items
+      setRelatedItems(related);
+    } catch (err) {
+      console.error('Failed to load related items', err);
+      setRelatedItems([]);
     }
   };
 
@@ -101,16 +109,24 @@ const MenuItemDetail = () => {
     alert('Item added to cart!');
   };
 
-  // Handle review submission
-  const handleReviewSubmit = (reviewData) => {
-    const newReview = {
-      user: user?.name || 'Anonymous',
-      rating: reviewData.rating,
-      comment: reviewData.comment,
-      date: new Date().toLocaleDateString(),
-      item: item?.name
-    };
+  // Handle add to wishlist
+  const handleAddToWishlist = async () => {
+    if (!user) {
+      alert('Please login to add items to your wishlist');
+      return;
+    }
     
+    try {
+      await addToWishlist(item._id);
+      alert('Item added to wishlist!');
+    } catch (err) {
+      alert('Failed to add item to wishlist');
+    }
+  };
+
+  // Handle review submission
+  const handleReviewAdded = (newReview) => {
+    // Add the new review to the top of the list
     setReviews(prev => [newReview, ...prev]);
     alert('Thank you for your review!');
   };
@@ -138,6 +154,9 @@ const MenuItemDetail = () => {
       </div>
     );
   }
+
+  console.log('Rendering MenuItemDetail with reviews:', reviews);
+  console.log('User status:', user);
 
   return (
     <div className="pt-24 pb-16 px-4">
@@ -193,13 +212,27 @@ const MenuItemDetail = () => {
                   <span className="font-bold">{item.rating}</span>
                   <span className="text-amber-100/60 ml-1">({item.numOfReviews} reviews)</span>
                 </div>
+                <button 
+                  onClick={handleAddToWishlist}
+                  className="flex items-center text-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  <FaHeart className="mr-1" />
+                  Add to Wishlist
+                </button>
               </div>
               
               <p className="text-amber-100/80 text-lg mb-6">{item.description}</p>
               
-              <div className="text-3xl font-bold text-amber-400">
+              <div className="text-3xl font-bold text-amber-400 mb-4">
                 ₹{basePrice}
               </div>
+              
+              {item.category && (
+                <div className="flex items-center mb-4">
+                  <FaTag className="text-amber-400 mr-2" />
+                  <span className="text-amber-100/80">Category: {item.category}</span>
+                </div>
+              )}
             </div>
 
             {/* Size Selection */}
@@ -292,18 +325,23 @@ const MenuItemDetail = () => {
         {/* Reviews Section */}
         <div className="mt-16">
           <h2 className="text-3xl font-bold mb-8">Customer Reviews</h2>
-          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="space-y-6">
-                {reviews.map((review, index) => (
-                  <ReviewCard key={index} review={review} />
-                ))}
+                {reviews.length > 0 ? (
+                  reviews.map((review, index) => (
+                    <ReviewCard key={review._id || index} review={review} />
+                  ))
+                ) : (
+                  <div className="text-amber-100/80 text-center py-8">
+                    No reviews yet. Be the first to review this item!
+                  </div>
+                )}
               </div>
             </div>
             
-            <div>
-              <AddReview onSubmit={handleReviewSubmit} />
+            <div id="review-form-container">
+              <AddReviewForm menuItemId={id} onReviewAdded={handleReviewAdded} />
             </div>
           </div>
         </div>
@@ -311,12 +349,41 @@ const MenuItemDetail = () => {
         {/* Related Items */}
         <div className="mt-16">
           <h2 className="text-3xl font-bold mb-8">You Might Also Like</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* For now, we'll show some placeholder items */}
-            <div className="text-amber-100/80 text-center py-8">
-              Related items will appear here
+          {relatedItems.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedItems.map((relatedItem) => (
+                <div 
+                  key={relatedItem._id} 
+                  className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group cursor-pointer"
+                  onClick={() => navigate(`/menu/${relatedItem._id}`)}
+                >
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={relatedItem.image} 
+                      alt={relatedItem.name} 
+                      className="w-full h-32 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a120b] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="font-semibold mb-2 truncate">{relatedItem.name}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-amber-400 font-bold">₹{relatedItem.price}</span>
+                      <div className="flex items-center">
+                        <FaStar className="text-amber-400 text-sm mr-1" />
+                        <span className="text-sm">{relatedItem.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          ) : (
+            <div className="text-amber-100/80 text-center py-8">
+              No related items found
+            </div>
+          )}
         </div>
       </div>
     </div>

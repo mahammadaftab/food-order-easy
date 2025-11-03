@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext.jsx';
@@ -9,7 +9,7 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading } = useContext(AppContext);
+  const { login, loading, error, setError } = useContext(AppContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,6 +28,21 @@ const Login = () => {
     }
   };
 
+  // Clear error when component unmounts or when user starts typing
+  useEffect(() => {
+    return () => {
+      setError(null);
+    };
+  }, [setError]);
+
+  const handleInputChange = (e) => {
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
+    }
+    handleChange(e);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 pt-24">
       <div className="max-w-md w-full bg-[#2D1B0E]/50 rounded-2xl border border-amber-900/30 p-8 shadow-2xl">
@@ -38,6 +53,13 @@ const Login = () => {
           <h2 className="text-3xl font-bold">Welcome Back</h2>
           <p className="text-amber-100/80 mt-2">Sign in to your account</p>
         </div>
+
+        {/* Display specific error messages */}
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
@@ -50,7 +72,7 @@ const Login = () => {
                 type="email"
                 name="email"
                 value={credentials.email}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="your.email@example.com"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
@@ -68,7 +90,7 @@ const Login = () => {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={credentials.password}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="Enter your password"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-12 py-3"

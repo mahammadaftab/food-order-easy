@@ -80,9 +80,10 @@ export const AppProvider = ({ children }) => {
       
       return { success: true };
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Login failed');
+      const errorMessage = err.response?.data?.error?.message || 'Login failed';
+      setError(errorMessage);
       setLoading(false);
-      return { success: false, error: err.response?.data?.error?.message || 'Login failed' };
+      return { success: false, error: errorMessage };
     }
   };
 

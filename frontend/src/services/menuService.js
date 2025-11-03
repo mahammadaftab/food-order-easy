@@ -1,16 +1,16 @@
 import API from '../config/api';
 
 // Get all menu items
-export const getMenuItems = async (params = {}) => {
+export const getMenuItems = async () => {
   try {
-    const res = await API.get('/menu', { params });
+    const res = await API.get('/menu');
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.error?.message || 'Failed to fetch menu items');
   }
 };
 
-// Get single menu item by ID
+// Get menu item by ID
 export const getMenuItemById = async (id) => {
   try {
     const res = await API.get(`/menu/${id}`);
@@ -20,32 +20,49 @@ export const getMenuItemById = async (id) => {
   }
 };
 
-// Create a new menu item (admin only)
-export const createMenuItem = async (menuItemData) => {
+// Get top rated menu items
+export const getTopRatedItems = async () => {
   try {
-    const res = await API.post('/menu', menuItemData);
+    console.log('Fetching top rated items...');
+    const res = await API.get('/menu?sort=-rating&limit=10');
+    console.log('Top rated items response:', res.data);
     return res.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error?.message || 'Failed to create menu item');
+    console.error('Failed to fetch top rated items:', error);
+    throw new Error(error.response?.data?.error?.message || 'Failed to fetch top rated items');
   }
 };
 
-// Update a menu item (admin only)
-export const updateMenuItem = async (id, menuItemData) => {
+// Search menu items
+export const searchMenuItems = async (query) => {
   try {
-    const res = await API.put(`/menu/${id}`, menuItemData);
+    const res = await API.get(`/menu?search=${query}`);
     return res.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error?.message || 'Failed to update menu item');
+    throw new Error(error.response?.data?.error?.message || 'Failed to search menu items');
   }
 };
 
-// Delete a menu item (admin only)
-export const deleteMenuItem = async (id) => {
+// Search menu items by multiple criteria
+export const searchMenuItemsAdvanced = async (query, category = null) => {
   try {
-    const res = await API.delete(`/menu/${id}`);
+    let url = `/menu?search=${query}`;
+    if (category && category !== 'all') {
+      url += `&category=${category}`;
+    }
+    const res = await API.get(url);
     return res.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error?.message || 'Failed to delete menu item');
+    throw new Error(error.response?.data?.error?.message || 'Failed to search menu items');
+  }
+};
+
+// Get menu items for autocomplete (limited fields for performance)
+export const getMenuItemsForAutocomplete = async (query) => {
+  try {
+    const res = await API.get(`/menu?search=${query}&select=name,price,image,_id`);
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || 'Failed to fetch autocomplete suggestions');
   }
 };

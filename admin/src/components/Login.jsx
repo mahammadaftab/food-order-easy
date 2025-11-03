@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,11 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+    
+    // Clear error when user starts typing
+    if (error) {
+      setError('');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -24,7 +29,7 @@ const Login = () => {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5002/api/v1/auth/login', formData);
+      const res = await axios.post('http://localhost:5001/api/v1/auth/login', formData);
       
       // Save token to localStorage
       localStorage.setItem('token', res.data.token);
@@ -32,11 +37,19 @@ const Login = () => {
       // Redirect to dashboard
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Login failed');
+      const errorMessage = err.response?.data?.error?.message || 'Login failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  // Clear error when component unmounts
+  useEffect(() => {
+    return () => {
+      setError('');
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a120b] to-[#3c2a21] px-4">

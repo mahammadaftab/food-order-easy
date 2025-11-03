@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children }) => {
           }
         };
         
-        await axios.get('http://localhost:5002/api/v1/auth/me', config);
+        await axios.get('http://localhost:5001/api/v1/auth/me', config);
         setLoading(false);
       } catch (error) {
         // Token is invalid, redirect to login

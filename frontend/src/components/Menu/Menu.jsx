@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getMenuItems } from '../../services/menuService';
 import SearchBar from '../Search/SearchBar';
 import CategoryFilter from '../Category/CategoryFilter';
@@ -14,10 +14,26 @@ const Menu = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart, addToWishlist, user } = useContext(AppContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
     loadMenuItems();
   }, []);
+
+  useEffect(() => {
+    // Apply search filter when search query changes
+    if (searchQuery) {
+      const filtered = menuItems.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredItems(filtered);
+    } else {
+      setFilteredItems(menuItems);
+    }
+  }, [searchQuery, menuItems]);
 
   const loadMenuItems = async () => {
     try {
@@ -33,18 +49,12 @@ const Menu = () => {
   };
 
   const handleSearch = (query) => {
-    if (!query) {
-      setFilteredItems(menuItems);
-      return;
+    // Update search params in URL
+    if (query) {
+      setSearchParams({ search: query });
+    } else {
+      setSearchParams({});
     }
-    
-    const filtered = menuItems.filter(item => 
-      item.name.toLowerCase().includes(query.toLowerCase()) ||
-      item.description.toLowerCase().includes(query.toLowerCase()) ||
-      item.category.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setFilteredItems(filtered);
   };
 
   const handleAddToCart = (item) => {
@@ -105,6 +115,21 @@ const Menu = () => {
         </div>
       </section>
 
+      {/* Search Results Info */}
+      {searchQuery && (
+        <div className="max-w-7xl mx-auto mb-6">
+          <p className="text-amber-100/80">
+            Showing results for: <span className="text-amber-400 font-medium">"{searchQuery}"</span>
+            <button 
+              onClick={() => handleSearch('')}
+              className="ml-4 text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              Clear search
+            </button>
+          </p>
+        </div>
+      )}
+
       {/* Menu Items */}
       <section>
         <div className="max-w-7xl mx-auto">
@@ -119,7 +144,11 @@ const Menu = () => {
           ) : filteredCategoryItems.length === 0 ? (
             <div className="text-center py-16">
               <h3 className="text-2xl font-bold mb-4">No items found</h3>
-              <p className="text-amber-100/80">Try adjusting your search or category filter</p>
+              <p className="text-amber-100/80">
+                {searchQuery 
+                  ? `No items match your search for "${searchQuery}". Try different keywords.`
+                  : 'Try adjusting your search or category filter'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

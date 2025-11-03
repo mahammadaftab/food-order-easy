@@ -6,15 +6,21 @@ const FeaturedCarousel = ({ items }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
+  // Filter items to only show popular or best sellers
+  const filteredItems = items.filter(item => item.isPopular || item.isBestSeller);
+
   useEffect(() => {
+    console.log('Carousel items received:', items);
+    console.log('Filtered items (popular/best sellers):', filteredItems);
+    
     let interval;
-    if (isAutoPlaying && items.length > 1) {
+    if (isAutoPlaying && filteredItems.length > 1) {
       interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredItems.length);
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [isAutoPlaying, items.length]);
+  }, [isAutoPlaying, filteredItems.length]);
 
   const goToSlide = (index) => {
     setCurrentIndex(index);
@@ -22,18 +28,23 @@ const FeaturedCarousel = ({ items }) => {
 
   const goToPrevSlide = () => {
     setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? items.length - 1 : prevIndex - 1
+      prevIndex === 0 ? filteredItems.length - 1 : prevIndex - 1
     );
   };
 
   const goToNextSlide = () => {
     setCurrentIndex((prevIndex) => 
-      prevIndex === items.length - 1 ? 0 : prevIndex + 1
+      prevIndex === filteredItems.length - 1 ? 0 : prevIndex + 1
     );
   };
 
-  if (!items || items.length === 0) {
-    return null;
+  if (!filteredItems || filteredItems.length === 0) {
+    console.log('No popular or best seller items to display in carousel');
+    return (
+      <div className="bg-amber-900/20 rounded-3xl p-8 text-center">
+        <p className="text-amber-400">No featured items available</p>
+      </div>
+    );
   }
 
   return (
@@ -47,7 +58,7 @@ const FeaturedCarousel = ({ items }) => {
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <div key={item._id} className="min-w-full relative">
               <img 
                 src={item.image} 
@@ -97,7 +108,7 @@ const FeaturedCarousel = ({ items }) => {
       </div>
 
       {/* Navigation Arrows */}
-      {items.length > 1 && (
+      {filteredItems.length > 1 && (
         <>
           <button 
             onClick={goToPrevSlide}
@@ -119,9 +130,9 @@ const FeaturedCarousel = ({ items }) => {
       )}
 
       {/* Dots */}
-      {items.length > 1 && (
+      {filteredItems.length > 1 && (
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {items.map((_, index) => (
+          {filteredItems.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}

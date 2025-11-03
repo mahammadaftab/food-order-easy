@@ -1,39 +1,65 @@
-import React, { useContext, useEffect } from 'react';
-import { AppContext } from '../../context/AppContext.jsx';
-import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaCheck, FaExclamation, FaInfo, FaTimes } from 'react-icons/fa';
 
-const Notification = () => {
-  const { error, setError } = useContext(AppContext);
+const Notification = ({ message, type = 'info', duration = 3000, onClose }) => {
+  // Don't render if there's no message
+  if (!message) {
+    return null;
+  }
 
   useEffect(() => {
-    if (error) {
-      // Auto dismiss error after 5 seconds
-      const timer = setTimeout(() => {
-        setError(null);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [error, setError]);
+    const timer = setTimeout(() => {
+      onClose();
+    }, duration);
 
-  if (!error) return null;
+    return () => clearTimeout(timer);
+  }, [duration, onClose]);
+
+  const getTypeStyles = () => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-600 border-green-500';
+      case 'error':
+        return 'bg-red-600 border-red-500';
+      case 'warning':
+        return 'bg-yellow-600 border-yellow-500';
+      default:
+        return 'bg-blue-600 border-blue-500';
+    }
+  };
+
+  const getIcon = () => {
+    switch (type) {
+      case 'success':
+        return <FaCheck className="text-white" />;
+      case 'error':
+        return <FaExclamation className="text-white" />;
+      case 'warning':
+        return <FaExclamation className="text-white" />;
+      default:
+        return <FaInfo className="text-white" />;
+    }
+  };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <div className="bg-red-900/90 border border-red-700 text-white px-6 py-4 rounded-lg shadow-lg max-w-md flex items-start">
-        <FaExclamationCircle className="text-red-400 text-xl mr-3 mt-0.5 flex-shrink-0" />
-        <div className="flex-grow">
-          <h4 className="font-bold">Error</h4>
-          <p className="text-sm mt-1">{error}</p>
-        </div>
-        <button 
-          onClick={() => setError(null)}
-          className="text-red-300 hover:text-white ml-4"
-        >
-          <FaTimes />
-        </button>
+    <motion.div
+      initial={{ opacity: 0, y: 50, scale: 0.3 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+      className={`fixed bottom-4 right-4 z-50 flex items-center p-4 rounded-lg border shadow-lg ${getTypeStyles()}`}
+    >
+      <div className="mr-3 text-lg">
+        {getIcon()}
       </div>
-    </div>
+      <span className="text-white font-medium">{message}</span>
+      <button
+        onClick={onClose}
+        className="ml-4 text-white hover:text-gray-200 focus:outline-none"
+      >
+        <FaTimes />
+      </button>
+    </motion.div>
   );
 };
 

@@ -56,7 +56,7 @@ const AddItem = () => {
       }
     };
     
-    const res = await axios.post('http://localhost:5002/api/v1/upload', formData, config);
+    const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
     return res.data.data;
   };
 
@@ -95,7 +95,7 @@ const AddItem = () => {
         }
       };
 
-      await axios.post('http://localhost:5002/api/v1/menu', menuItemData, config);
+      await axios.post('http://localhost:5001/api/v1/menu', menuItemData, config);
       
       setSuccess(true);
       // Reset form
