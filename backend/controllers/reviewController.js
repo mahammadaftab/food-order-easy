@@ -1,5 +1,6 @@
 const Review = require('../models/MenuItem').schema.paths.reviews.options.type;
 const MenuItem = require('../models/MenuItem');
+const mongoose = require('mongoose');
 const asyncHandler = require('../utils/asyncHandler');
 const ErrorResponse = require('../utils/errorResponse');
 
@@ -31,6 +32,18 @@ const addReview = asyncHandler(async (req, res, next) => {
   console.log('Review data:', req.body);
   console.log('User:', req.user);
   
+  // Validate menu item ID
+  if (!req.params.menuItemId || req.params.menuItemId === 'undefined') {
+    console.log('Invalid menu item ID provided:', req.params.menuItemId);
+    return next(new ErrorResponse('Invalid menu item ID', 400));
+  }
+  
+  // Check if the ID is a valid MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(req.params.menuItemId)) {
+    console.log('Invalid MongoDB ObjectId format:', req.params.menuItemId);
+    return next(new ErrorResponse('Invalid menu item ID format', 400));
+  }
+  
   req.body.menuItem = req.params.menuItemId;
   req.body.user = req.user.id;
   req.body.name = req.user.name;
@@ -38,8 +51,8 @@ const addReview = asyncHandler(async (req, res, next) => {
   const menuItem = await MenuItem.findById(req.params.menuItemId);
 
   if (!menuItem) {
-    console.log('Menu item not found:', req.params.menuItemId);
-    return next(new ErrorResponse(`No menu item with the id of ${req.params.menuItemId}`, 404));
+    console.log('Menu item not found with ID:', req.params.menuItemId);
+    return next(new ErrorResponse(`No menu item found with the id of ${req.params.menuItemId}`, 404));
   }
 
   const review = {
@@ -66,7 +79,7 @@ const addReview = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Update review
-// @route   PUT /api/v1/reviews/:id
+// @route   PUT /api/v1/menu/:menuItemId/reviews/:id
 // @access  Private
 const updateReview = asyncHandler(async (req, res, next) => {
   let menuItem = await MenuItem.findOne({ 'reviews._id': req.params.id });
@@ -102,7 +115,7 @@ const updateReview = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Delete review
-// @route   DELETE /api/v1/reviews/:id
+// @route   DELETE /api/v1/menu/:menuItemId/reviews/:id
 // @access  Private
 const deleteReview = asyncHandler(async (req, res, next) => {
   let menuItem = await MenuItem.findOne({ 'reviews._id': req.params.id });

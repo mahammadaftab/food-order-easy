@@ -58,7 +58,7 @@ const App = () => {
     try {
       setLoading(true);
       const data = await getMenuItems();
-      console.log('Menu items loaded:', data.data);
+      console.log('Menu items loaded in App.jsx:', data.data);
       setMenuItems(data.data);
       
       // Set featured items (only popular or best sellers)
@@ -418,23 +418,22 @@ const App = () => {
               .map((item, index) => (
               <motion.div 
                 key={item._id} 
-                className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group"
+                className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group cursor-pointer"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
                 whileHover={{ y: -10 }}
+                onClick={() => navigate(`/menu/${item._id}`)}
               >
                 <div className="relative overflow-hidden">
-                  <Link to={`/menu/${item._id}`}>
-                    <motion.img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-full h-48 object-cover cursor-pointer"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </Link>
+                  <motion.img 
+                    src={item.image} 
+                    alt={item.name} 
+                    className="w-full h-48 object-cover"
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.3 }}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a120b] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
                   {/* Badges */}
@@ -459,9 +458,9 @@ const App = () => {
                 
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <Link to={`/menu/${item._id}`} className="text-lg font-semibold hover:text-amber-400 transition-colors">
+                    <h3 className="text-lg font-semibold hover:text-amber-400 transition-colors">
                       {item.name}
-                    </Link>
+                    </h3>
                     <span className="text-amber-400 font-bold">₹{item.price}</span>
                   </div>
                   <p className="text-amber-100/80 text-xs mb-3 line-clamp-2">{item.description}</p>

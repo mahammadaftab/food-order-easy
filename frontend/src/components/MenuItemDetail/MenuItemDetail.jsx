@@ -30,11 +30,23 @@ const MenuItemDetail = () => {
 
   const loadMenuItem = async () => {
     try {
+      console.log('Loading menu item with ID:', id);
+      
+      // Validate ID before making API call
+      if (!id || id === 'undefined') {
+        console.error('Invalid menu item ID:', id);
+        setError('Invalid menu item ID');
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       const data = await getMenuItemById(id);
+      console.log('Menu item data loaded:', data);
       setItem(data.data);
       setLoading(false);
     } catch (err) {
+      console.error('Error loading menu item:', err);
       setError(err.message);
       setLoading(false);
     }
@@ -55,10 +67,18 @@ const MenuItemDetail = () => {
   const loadRelatedItems = async () => {
     try {
       const data = await getMenuItems();
+      console.log('All menu items for related items:', data.data);
+      
       // Filter items from the same category, excluding the current item
       const related = data.data
-        .filter(item => item._id !== id)
+        .filter(item => {
+          const isValid = item._id && item._id !== id && id;
+          console.log('Filtering item:', item._id, 'isValid:', isValid, 'currentId:', id);
+          return isValid;
+        })
         .slice(0, 4); // Limit to 4 items
+      
+      console.log('Filtered related items:', related);
       setRelatedItems(related);
     } catch (err) {
       console.error('Failed to load related items', err);

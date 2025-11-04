@@ -13,6 +13,13 @@ const getMenuItems = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/menu/:id
 // @access  Public
 const getMenuItem = asyncHandler(async (req, res, next) => {
+  // Validate ID format
+  if (!req.params.id || req.params.id === 'undefined') {
+    return next(
+      new ErrorResponse('Invalid menu item ID', 400)
+    );
+  }
+
   const menuItem = await MenuItem.findById(req.params.id);
 
   if (!menuItem) {

@@ -4,6 +4,7 @@ import API from '../config/api';
 export const getReviews = async (menuItemId) => {
   try {
     console.log('Fetching reviews for menu item:', menuItemId);
+    // Use the correct endpoint: /api/v1/menu/:menuItemId/reviews
     const res = await API.get(`/menu/${menuItemId}/reviews`);
     console.log('Reviews fetched successfully for', menuItemId, ':', res.data);
     return res.data;
@@ -17,6 +18,7 @@ export const getReviews = async (menuItemId) => {
 export const addReview = async (menuItemId, reviewData) => {
   try {
     console.log('Adding review for menu item:', menuItemId, reviewData);
+    // Use the correct endpoint: /api/v1/menu/:menuItemId/reviews
     const res = await API.post(`/menu/${menuItemId}/reviews`, reviewData);
     console.log('Review added successfully:', res.data);
     return res.data;

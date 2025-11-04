@@ -34,12 +34,11 @@ app.use(express.static('public'));
 
 // Mount routers
 app.use('/api/v1/auth', auth);
-app.use('/api/v1/menu', menu);
+app.use('/api/v1/menu', menu, reviews);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/upload', upload);
 app.use('/api/v1/wishlist', wishlist);
 app.use('/api/v1/chefs', chefs);
-app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/payments', payments);
 
 // Error handling middleware

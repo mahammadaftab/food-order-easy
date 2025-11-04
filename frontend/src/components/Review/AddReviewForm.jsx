@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { AppContext } from '../../context/AppContext';
 import { addReview } from '../../services/reviewService';
@@ -14,9 +14,26 @@ const AddReviewForm = ({ menuItemId, onReviewAdded }) => {
 
   console.log('AddReviewForm rendered with menuItemId:', menuItemId);
   console.log('User in AddReviewForm:', user);
+  
+  // Validate menuItemId
+  useEffect(() => {
+    if (!menuItemId || menuItemId === 'undefined') {
+      console.error('Invalid menu item ID provided to AddReviewForm:', menuItemId);
+      setError('Invalid menu item ID. Please refresh the page and try again.');
+    }
+  }, [menuItemId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    console.log('Submitting review for menu item:', menuItemId);
+    console.log('User:', user);
+    
+    // Validate menuItemId again before submission
+    if (!menuItemId || menuItemId === 'undefined') {
+      setError('Invalid menu item ID. Please refresh the page and try again.');
+      return;
+    }
     
     if (!user) {
       setError('Please login to submit a review');
@@ -43,7 +60,9 @@ const AddReviewForm = ({ menuItemId, onReviewAdded }) => {
         comment
       };
       
+      console.log('Sending review data:', reviewData);
       const res = await addReview(menuItemId, reviewData);
+      console.log('Review response:', res);
       
       setSuccess(true);
       setRating(0);
@@ -54,7 +73,8 @@ const AddReviewForm = ({ menuItemId, onReviewAdded }) => {
         onReviewAdded(res.data);
       }
     } catch (err) {
-      setError(err.message || 'Failed to submit review');
+      console.error('Review submission error:', err);
+      setError(err.message || 'Failed to submit review. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTruck, FaCheck, FaEllipsisV, FaClock, FaBox } from 'react-icons/fa';
+import { FaTruck, FaCheck, FaClock, FaBox, FaUser, FaCalendar, FaRupeeSign, FaInfoCircle } from 'react-icons/fa';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -47,9 +47,6 @@ const Orders = () => {
       setOrders(orders.map(order => 
         order._id === orderId ? updatedOrder : order
       ));
-      
-      // Close dropdown
-      setDropdownOpen(null);
     } catch (err) {
       alert(err.response?.data?.error?.message || 'Failed to update order status');
     }
@@ -85,8 +82,27 @@ const Orders = () => {
     }
   };
 
+  const getItemStatus = (item, orderStatus) => {
+    // Determine item status based on overall order status
+    if (orderStatus === 'Delivered') {
+      return { status: 'Delivered', class: 'bg-green-900/30 text-green-400' };
+    } else if (orderStatus === 'Out of Delivery') {
+      return { status: 'Out for Delivery', class: 'bg-purple-900/30 text-purple-400' };
+    } else if (orderStatus === 'In Process') {
+      return { status: 'Preparing', class: 'bg-amber-900/30 text-amber-400' };
+    } else if (orderStatus === 'Paid') {
+      return { status: 'Confirmed', class: 'bg-blue-900/30 text-blue-400' };
+    } else {
+      return { status: 'Pending', class: 'bg-yellow-900/30 text-yellow-400' };
+    }
+  };
+
   const getOrderStatus = (order) => {
     return order.status || (order.isDelivered ? 'Delivered' : order.isPaid ? 'Paid' : 'Pending');
+  };
+
+  const toggleOrderDetails = (orderId) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId);
   };
 
   if (loading) {
@@ -120,81 +136,163 @@ const Orders = () => {
               <p className="text-amber-100/80 text-xl">No orders found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-amber-900/30">
-                    <th className="text-left py-3 px-4">Order ID</th>
-                    <th className="text-left py-3 px-4">Customer</th>
-                    <th className="text-left py-3 px-4">Date</th>
-                    <th className="text-left py-3 px-4">Amount</th>
-                    <th className="text-left py-3 px-4">Status</th>
-                    <th className="text-left py-3 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr key={order._id} className="border-b border-amber-900/30 hover:bg-[#3c2a21]/30">
-                      <td className="py-3 px-4">
-                        <span className="font-mono">#{order._id.substring(0, 8)}</span>
-                      </td>
-                      <td className="py-3 px-4">
-                        {order.user?.name || 'N/A'}
-                        <p className="text-amber-100/80 text-sm">{order.user?.email || 'N/A'}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4 font-bold">₹{order.totalPrice}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-full text-sm ${getStatusClass(getOrderStatus(order))}`}>
+            <div className="space-y-6">
+              {orders.map((order) => (
+                <div key={order._id} className="bg-[#3c2a21]/30 rounded-xl border border-amber-900/30 overflow-hidden transition-all hover:border-amber-600/50">
+                  {/* Order Header */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                      <div>
+                        <div className="font-mono text-amber-400">#{order._id.substring(0, 8)}</div>
+                        <div className="text-amber-100/80 text-sm">
+                          <FaCalendar className="inline mr-1" />
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center">
+                          <FaUser className="mr-2 text-amber-400" />
+                          <div>
+                            <div className="font-medium">{order.user?.name || 'N/A'}</div>
+                            <div className="text-amber-100/80 text-sm">{order.user?.email || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center">
+                          <FaRupeeSign className="mr-1 text-amber-400" />
+                          <span className="font-bold text-lg">{order.totalPrice}</span>
+                        </div>
+                        <div className="text-amber-100/80 text-sm">{order.orderItems?.length} items</div>
+                      </div>
+                      
+                      <div>
+                        <span className={`px-3 py-1 rounded-full text-sm ${getStatusClass(getOrderStatus(order))}`}>
                           {getStatusIcon(getOrderStatus(order))}
                           {getOrderStatus(order)}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 relative">
-                        <div className="relative">
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <div className="flex space-x-2">
                           <button
-                            onClick={() => setDropdownOpen(dropdownOpen === order._id ? null : order._id)}
+                            onClick={() => handleStatusUpdate(order._id, 'In Process')}
                             className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
                           >
-                            <FaEllipsisV className="mr-1" />
-                            Actions
+                            <FaClock className="mr-1" />
+                            In Process
                           </button>
-                          
-                          {dropdownOpen === order._id && (
-                            <div className="absolute right-0 mt-1 w-48 bg-[#2D1B0E] border border-amber-900/30 rounded-lg shadow-lg z-10">
-                              <div className="py-1">
-                                <button
-                                  onClick={() => handleStatusUpdate(order._id, 'In Process')}
-                                  className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20 flex items-center"
-                                >
-                                  <FaClock className="mr-2 text-amber-400" />
-                                  In Process
-                                </button>
-                                <button
-                                  onClick={() => handleStatusUpdate(order._id, 'Out of Delivery')}
-                                  className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20 flex items-center"
-                                >
-                                  <FaTruck className="mr-2 text-amber-400" />
-                                  Out of Delivery
-                                </button>
-                                <button
-                                  onClick={() => handleStatusUpdate(order._id, 'Delivered')}
-                                  className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20 flex items-center"
-                                >
-                                  <FaCheck className="mr-2 text-amber-400" />
-                                  Delivered
-                                </button>
+                          <button
+                            onClick={() => handleStatusUpdate(order._id, 'Out of Delivery')}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
+                          >
+                            <FaTruck className="mr-1" />
+                            Out of Delivery
+                          </button>
+                          <button
+                            onClick={() => handleStatusUpdate(order._id, 'Delivered')}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
+                          >
+                            <FaCheck className="mr-1" />
+                            Delivered
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Expand/Collapse Button */}
+                    <div className="mt-4 flex justify-center">
+                      <button
+                        onClick={() => toggleOrderDetails(order._id)}
+                        className="text-amber-400 hover:text-amber-300 text-sm"
+                      >
+                        {expandedOrder === order._id ? 'Hide Details' : 'View Details'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Order Details */}
+                  {expandedOrder === order._id && (
+                    <div className="border-t border-amber-900/30 p-6 bg-[#2D1B0E]/30">
+                      <h3 className="text-xl font-bold mb-4">Order Items</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {order.orderItems?.map((item, index) => {
+                          const itemStatus = getItemStatus(item, getOrderStatus(order));
+                          return (
+                            <div key={index} className="bg-[#3c2a21]/50 rounded-lg p-4 flex items-center relative">
+                              {item.image ? (
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name} 
+                                  className="w-16 h-16 rounded-lg object-cover mr-4"
+                                  onError={(e) => {
+                                    e.target.src = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-16 h-16 rounded-lg bg-amber-900/30 flex items-center justify-center mr-4">
+                                  <FaBox className="text-amber-400" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-amber-100/80 text-sm">Qty: {item.quantity}</div>
+                                <div className="flex items-center text-amber-400">
+                                  <FaRupeeSign className="text-xs" />
+                                  <span>{item.price * item.quantity}</span>
+                                </div>
+                              </div>
+                              <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs ${itemStatus.class}`}>
+                                {itemStatus.status}
                               </div>
                             </div>
-                          )}
+                          );
+                        })}
+                      </div>
+                      
+                      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-amber-900/20 rounded-lg p-4">
+                          <h4 className="font-bold mb-2">Shipping Address</h4>
+                          <p className="text-amber-100/80 text-sm">
+                            {order.shippingAddress?.address}<br />
+                            {order.shippingAddress?.city}, {order.shippingAddress?.postalCode}<br />
+                            {order.shippingAddress?.country}
+                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        
+                        <div className="bg-amber-900/20 rounded-lg p-4">
+                          <h4 className="font-bold mb-2">Payment Method</h4>
+                          <p className="text-amber-100/80">{order.paymentMethod}</p>
+                        </div>
+                        
+                        <div className="bg-amber-900/20 rounded-lg p-4">
+                          <h4 className="font-bold mb-2">Order Summary</h4>
+                          <div className="space-y-1 text-amber-100/80 text-sm">
+                            <div className="flex justify-between">
+                              <span>Subtotal</span>
+                              <span>₹{order.itemsPrice}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Tax</span>
+                              <span>₹{order.taxPrice}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Shipping</span>
+                              <span>₹{order.shippingPrice}</span>
+                            </div>
+                            <div className="flex justify-between font-bold text-amber-400 pt-2">
+                              <span>Total</span>
+                              <span>₹{order.totalPrice}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>

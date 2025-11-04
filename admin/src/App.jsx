@@ -6,6 +6,7 @@ import AddItem from './components/AddItem';
 import ManageItems from './components/ManageItems';
 import Orders from './components/Orders';
 import ManageChefs from './components/ManageChefs';
+import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/manage-items" element={<ProtectedRoute><ManageItems /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
           <Route path="/manage-chefs" element={<ProtectedRoute><ManageChefs /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>

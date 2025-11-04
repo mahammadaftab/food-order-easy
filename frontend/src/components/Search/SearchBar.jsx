@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import { getMenuItemsForAutocomplete } from '../../services/menuService';
 
@@ -9,6 +10,7 @@ const SearchBar = ({ onSearch, placeholder = "Search menu items..." }) => {
   const [loading, setLoading] = useState(false);
   const searchBarRef = useRef(null);
   const suggestionsRef = useRef(null);
+  const navigate = useNavigate();
 
   // Handle click outside to close suggestions
   useEffect(() => {
@@ -76,7 +78,7 @@ const SearchBar = ({ onSearch, placeholder = "Search menu items..." }) => {
     setQuery(item.name);
     setShowSuggestions(false);
     // Navigate to the item detail page
-    window.location.href = `/menu/${item._id}`;
+    navigate(`/menu/${item._id}`);
   };
 
   return (

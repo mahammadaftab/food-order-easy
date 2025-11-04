@@ -97,7 +97,7 @@ const getMyOrders = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/orders
 // @access  Private/Admin
 const getOrders = asyncHandler(async (req, res, next) => {
-  const orders = await Order.find({}).populate('user', 'id name');
+  const orders = await Order.find({}).populate('user', 'id name email');
   res.json(orders);
 });
 
@@ -105,7 +105,7 @@ const getOrders = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate('user', 'name email');
 
   if (order) {
     order.isDelivered = true;
@@ -127,7 +127,7 @@ const updateOrderToDelivered = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/orders/:id/status
 // @access  Private/Admin
 const updateOrderStatus = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate('user', 'name email');
 
   if (order) {
     const { status } = req.body;

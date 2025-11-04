@@ -1,11 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUtensils, FaList, FaShoppingCart, FaUserAlt, FaSignOutAlt } from 'react-icons/fa';
+import axios from 'axios';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Load user data
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const config = {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          };
+          
+          const res = await axios.get('http://localhost:5001/api/v1/auth/me', config);
+          setUser(res.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load user', err);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -46,13 +87,42 @@ const Navbar = () => {
               </Link>
             ))}
             
-            <button
-              onClick={handleLogout}
-              className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-amber-100 hover:bg-amber-600/20 flex items-center transition-colors"
-            >
-              <FaSignOutAlt className="mr-2" />
-              Logout
-            </button>
+            {/* Profile Icon */}
+            <div className="relative ml-4" ref={profileMenuRef}>
+              <button
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center text-amber-100 hover:bg-amber-600/20 rounded-full p-1 transition-colors"
+              >
+                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8 rounded-full" />
+              </button>
+              
+              {/* Profile Dropdown */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#2D1B0E] border border-amber-900/30 rounded-lg shadow-lg z-10">
+                  <div className="py-1">
+                    <div className="px-4 py-2 border-b border-amber-900/30">
+                      <p className="text-sm font-medium">{user?.name || 'Admin User'}</p>
+                      <p className="text-xs text-amber-100/80">{user?.email || 'admin@example.com'}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <FaUserAlt className="inline mr-2" />
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20"
+                    >
+                      <FaSignOutAlt className="inline mr-2" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -91,6 +161,15 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
+              
+              <Link
+                to="/profile"
+                className="block px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:bg-amber-600/20 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FaUserAlt className="mr-2" />
+                My Profile
+              </Link>
               
               <button
                 onClick={() => {

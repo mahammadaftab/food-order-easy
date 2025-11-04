@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { getMenuItems } from '../../services/menuService';
 import SearchBar from '../Search/SearchBar';
 import CategoryFilter from '../Category/CategoryFilter';
@@ -18,6 +18,7 @@ const Menu = () => {
   const { addToCart, addToWishlist, user } = useContext(AppContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadMenuItems();
@@ -190,15 +191,17 @@ const Menu = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {filteredCategoryItems.map((item) => (
-                <div key={item._id} className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group">
+                <div 
+                  key={item._id} 
+                  className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group cursor-pointer"
+                  onClick={() => navigate(`/menu/${item._id}`)}
+                >
                   <div className="relative overflow-hidden">
-                    <Link to={`/menu/${item._id}`}>
-                      <img 
-                        src={item.image} 
-                        alt={item.name} 
-                        className="w-full h-48 object-cover cursor-pointer"
-                      />
-                    </Link>
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="w-full h-48 object-cover"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1a120b] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     
                     {/* Badges */}
@@ -221,9 +224,9 @@ const Menu = () => {
                   
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
-                      <Link to={`/menu/${item._id}`} className="text-xl font-semibold hover:text-amber-400 transition-colors">
+                      <h3 className="text-xl font-semibold hover:text-amber-400 transition-colors">
                         {item.name}
-                      </Link>
+                      </h3>
                       <span className="text-amber-400 font-bold text-lg">₹{item.price}</span>
                     </div>
                     <p className="text-amber-100/80 text-sm mb-4">{item.description}</p>

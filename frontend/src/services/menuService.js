@@ -3,9 +3,12 @@ import API from '../config/api';
 // Get all menu items
 export const getMenuItems = async () => {
   try {
+    console.log('Fetching all menu items...');
     const res = await API.get('/menu');
+    console.log('Menu items response:', res.data);
     return res.data;
   } catch (error) {
+    console.error('Error fetching menu items:', error);
     throw new Error(error.response?.data?.error?.message || 'Failed to fetch menu items');
   }
 };
@@ -13,9 +16,17 @@ export const getMenuItems = async () => {
 // Get menu item by ID
 export const getMenuItemById = async (id) => {
   try {
+    console.log('Fetching menu item with ID:', id);
+    
+    // Validate ID before making API call
+    if (!id || id === 'undefined') {
+      throw new Error('Invalid menu item ID');
+    }
+    
     const res = await API.get(`/menu/${id}`);
     return res.data;
   } catch (error) {
+    console.error('Error fetching menu item:', error);
     throw new Error(error.response?.data?.error?.message || 'Failed to fetch menu item');
   }
 };
