@@ -15,6 +15,8 @@ const NotFound = () => {
         <p className="text-amber-100/80 mb-8 text-lg">
           Oops! The page you're looking for doesn't exist or has been moved.
         </p>
+
+        
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link 
