@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
 import { contactFormFields } from '../../assets/dummydata';
+import Notification from '../Notification/Notification';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const Contact = () => {
     dish: '',
     query: ''
   });
+  const [notification, setNotification] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +26,13 @@ const Contact = () => {
     e.preventDefault();
     // In a real app, you would send this data to your backend
     console.log('Form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
+    
+    // Show notification
+    setNotification({
+      message: 'Thank you for your message! We will get back to you soon.',
+      type: 'success'
+    });
+    
     setFormData({
       name: '',
       phone: '',
@@ -33,6 +41,11 @@ const Contact = () => {
       dish: '',
       query: ''
     });
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   const contactInfo = [
@@ -60,6 +73,15 @@ const Contact = () => {
 
   return (
     <div className="pt-24 pb-16 px-4">
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">

@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { FaUser, FaLock, FaEnvelope, FaPhone, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext.jsx';
+import Notification from '../Notification/Notification';
 
 const Register = () => {
   const [userData, setUserData] = useState({
@@ -13,6 +14,7 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [notification, setNotification] = useState(null);
   const { register, loading } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -27,7 +29,15 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (userData.password !== userData.confirmPassword) {
-      alert('Passwords do not match!');
+      setNotification({
+        message: 'Passwords do not match!',
+        type: 'error'
+      });
+      
+      // Auto-hide notification after 3 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
       return;
     }
     
@@ -42,6 +52,15 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      
       <div className="max-w-md w-full bg-[#2D1B0E]/50 rounded-2xl border border-amber-900/30 p-8 shadow-2xl">
         <div className="text-center mb-8">
           <div className="mx-auto bg-amber-900/30 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">

@@ -53,6 +53,11 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  cardDetails: {
+    last4: String,
+    expiryDate: String,
+    cardholderName: String
+  },
   paymentResult: {
     id: String,
     status: String,
@@ -94,6 +99,12 @@ const orderSchema = new mongoose.Schema({
   },
   deliveredAt: {
     type: Date
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ['Pending', 'In Process', 'Out of Delivery', 'Delivered'],
+    default: 'Pending'
   },
   createdAt: {
     type: Date,

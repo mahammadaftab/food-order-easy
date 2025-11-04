@@ -41,7 +41,7 @@ const Cart = () => {
                 <div className="space-y-6">
                   {cartItems.map((item) => (
                     <div key={item._id || item.id} className="flex items-center border-b border-amber-900/30 pb-6 last:border-0 last:pb-0">
-                      <Link to={`/menu/${item._id || item.id}`} className="w-20 h-20 object-cover rounded-lg mr-4">
+                      <Link to={`/menu/${item.id}`} className="w-20 h-20 object-cover rounded-lg mr-4">
                         <img 
                           src={item.image} 
                           alt={item.name} 
@@ -50,7 +50,7 @@ const Cart = () => {
                       </Link>
                       
                       <div className="flex-grow">
-                        <Link to={`/menu/${item._id || item.id}`} className="font-bold text-lg hover:text-amber-400 transition-colors">
+                        <Link to={`/menu/${item.id}`} className="font-bold text-lg hover:text-amber-400 transition-colors">
                           {item.name}
                         </Link>
                         <p className="text-amber-100/80 text-sm mb-2">{item.description}</p>
@@ -59,14 +59,14 @@ const Cart = () => {
                       
                       <div className="flex items-center">
                         <button 
-                          onClick={() => updateCartItemQuantity(item._id || item.id, item.quantity - 1)}
+                          onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
                           className="bg-[#3c2a21] text-amber-400 w-8 h-8 rounded-full flex items-center justify-center hover:bg-amber-600/30 transition-colors"
                         >
                           <FaMinus />
                         </button>
                         <span className="mx-3 w-8 text-center">{item.quantity}</span>
                         <button 
-                          onClick={() => updateCartItemQuantity(item._id || item.id, item.quantity + 1)}
+                          onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
                           className="bg-[#3c2a21] text-amber-400 w-8 h-8 rounded-full flex items-center justify-center hover:bg-amber-600/30 transition-colors"
                         >
                           <FaPlus />
@@ -76,7 +76,7 @@ const Cart = () => {
                       <div className="ml-6 text-right">
                         <p className="font-bold">₹{item.price * item.quantity}</p>
                         <button 
-                          onClick={() => removeFromCart(item._id || item.id)}
+                          onClick={() => removeFromCart(item.id)}
                           className="text-amber-100/60 hover:text-amber-400 mt-2 transition-colors"
                         >
                           <FaTrash />

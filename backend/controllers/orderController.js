@@ -11,6 +11,7 @@ const addOrderItems = asyncHandler(async (req, res, next) => {
     orderItems,
     shippingAddress,
     paymentMethod,
+    cardDetails,
     itemsPrice,
     taxPrice,
     shippingPrice,
@@ -20,7 +21,7 @@ const addOrderItems = asyncHandler(async (req, res, next) => {
   if (orderItems && orderItems.length === 0) {
     return next(new ErrorResponse('No order items', 400));
   } else {
-    const order = new Order({
+    const orderData = {
       orderItems,
       user: req.user._id,
       shippingAddress,
@@ -29,7 +30,14 @@ const addOrderItems = asyncHandler(async (req, res, next) => {
       taxPrice,
       shippingPrice,
       totalPrice
-    });
+    };
+
+    // Add card details if provided
+    if (cardDetails) {
+      orderData.cardDetails = cardDetails;
+    }
+
+    const order = new Order(orderData);
 
     const createdOrder = await order.save();
 
@@ -102,7 +110,46 @@ const updateOrderToDelivered = asyncHandler(async (req, res, next) => {
   if (order) {
     order.isDelivered = true;
     order.deliveredAt = Date.now();
+    order.status = 'Delivered';
 
+    const updatedOrder = await order.save();
+
+    res.json({
+      success: true,
+      data: updatedOrder
+    });
+  } else {
+    return next(new ErrorResponse('Order not found', 404));
+  }
+});
+
+// @desc    Update order status
+// @route   PUT /api/v1/orders/:id/status
+// @access  Private/Admin
+const updateOrderStatus = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (order) {
+    const { status } = req.body;
+    
+    // Validate status
+    const validStatuses = ['Pending', 'In Process', 'Out of Delivery', 'Delivered'];
+    if (!validStatuses.includes(status)) {
+      return next(new ErrorResponse('Invalid status', 400));
+    }
+    
+    // Update order status
+    order.status = status;
+    
+    // Update related fields based on status
+    if (status === 'Delivered') {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+    } else if (status === 'In Process' || status === 'Out of Delivery') {
+      order.isDelivered = false;
+      order.deliveredAt = null;
+    }
+    
     const updatedOrder = await order.save();
 
     res.json({
@@ -120,5 +167,6 @@ module.exports = {
   updateOrderToPaid,
   getMyOrders,
   getOrders,
-  updateOrderToDelivered
+  updateOrderToDelivered,
+  updateOrderStatus
 };

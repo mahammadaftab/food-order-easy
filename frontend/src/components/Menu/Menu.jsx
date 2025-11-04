@@ -4,6 +4,7 @@ import { getMenuItems } from '../../services/menuService';
 import SearchBar from '../Search/SearchBar';
 import CategoryFilter from '../Category/CategoryFilter';
 import SkeletonLoader from '../Loading/SkeletonLoader';
+import Notification from '../Notification/Notification';
 import { AppContext } from '../../context/AppContext.jsx';
 import { FaShoppingCart, FaStar, FaFire, FaCrown, FaTag, FaPlus, FaHeart } from 'react-icons/fa';
 
@@ -13,6 +14,7 @@ const Menu = () => {
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
   const { addToCart, addToWishlist, user } = useContext(AppContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
@@ -60,19 +62,45 @@ const Menu = () => {
   const handleAddToCart = (item) => {
     // Add item to cart with default quantity of 1
     addToCart({ ...item, quantity: 1 });
+    
+    // Show notification
+    setNotification({
+      message: `${item.name} added to cart!`,
+      type: 'success'
+    });
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   const handleAddToWishlist = async (menuItemId) => {
     if (!user) {
-      alert('Please login to add items to your wishlist');
+      setNotification({
+        message: 'Please login to add items to your wishlist',
+        type: 'warning'
+      });
       return;
     }
     
     try {
       await addToWishlist(menuItemId);
+      setNotification({
+        message: 'Item added to wishlist!',
+        type: 'success'
+      });
     } catch (err) {
-      alert('Failed to add item to wishlist');
+      setNotification({
+        message: 'Failed to add item to wishlist',
+        type: 'error'
+      });
     }
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   const categories = [
@@ -89,6 +117,15 @@ const Menu = () => {
 
   return (
     <div className="pt-24 pb-16 px-4">
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       {/* Hero Section */}
       <section className="py-16 text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">

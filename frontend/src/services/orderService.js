@@ -59,3 +59,23 @@ export const updateOrderToDelivered = async (id) => {
     throw new Error(error.response?.data?.error?.message || 'Failed to update order delivery status');
   }
 };
+
+// Create payment record
+export const createPayment = async (paymentData) => {
+  try {
+    const res = await API.post('/payments', paymentData);
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || 'Failed to create payment');
+  }
+};
+
+// Process Stripe payment
+export const processStripePayment = async (paymentData) => {
+  try {
+    const res = await API.post('/payments/stripe', paymentData);
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || 'Failed to process Stripe payment');
+  }
+};

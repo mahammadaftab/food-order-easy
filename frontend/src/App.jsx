@@ -243,86 +243,140 @@ const App = () => {
           
           {/* Featured Content Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center my-12 p-4 bg-amber-900/10 rounded-2xl">
-            <div>
+            <div className="order-2 lg:order-1">
               <div className="relative">
-                <div className="relative aspect-square rounded-3xl overflow-hidden border-8 border-amber-900/30 shadow-2xl">
-                  {menuItems.length > 1 ? (
-                    <Link to={`/menu/${menuItems[1]._id}`}>
-                      <img 
-                        src={menuItems[1]?.image || ''} 
-                        alt="Featured Dish" 
-                        className="w-full h-full object-cover cursor-pointer"
-                      />
-                    </Link>
-                  ) : (
-                    <div className="w-full h-full bg-amber-900/20 flex items-center justify-center">
-                      <span className="text-amber-400">No featured dish available</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-rose-500/20"></div>
+                <div className="relative rounded-3xl overflow-hidden border-8 border-amber-900/30 shadow-2xl transform transition-transform duration-500">
+                  <img 
+                    src="/src/assets/AboutImage.png" 
+                    alt="Why Choose Us" 
+                    className="w-full h-auto object-contain max-h-[600px]"
+                  />
+
+                  
+
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-rose-500/10"></div>
                 </div>
-                <div className="absolute -bottom-6 -left-6 bg-[#2D1B0E] border-4 border-amber-600 rounded-2xl p-4 shadow-xl">
-                  <div className="flex items-center">
-                    {menuItems.length > 3 ? (
-                      <>
-                        <img 
-                          src={menuItems[3]?.image || ''} 
-                          alt="Chef's Special" 
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                        <div className="ml-4">
-                          <h3 className="font-bold">Chef's Special</h3>
-                          <Link to={`/menu/${menuItems[3]._id}`} className="text-amber-400 text-sm hover:text-amber-300 transition-colors">
-                            {menuItems[3]?.name || 'Special Item'}
-                          </Link>
+
+                {/* Chef's Special */}
+                  <section className="py-10 px-4 relative z-10">
+                    <div className="max-w-7xl mx-auto">
+                      <div className="absolute -bottom-8 -left-8 bg-[#2D1B0E] border-4 border-amber-600 rounded-2xl p-4 shadow-xl transform transition-transform duration-300 hover:scale-105">
+                        <div className="flex items-center">
+                          {menuItems.length > 0 ? (
+                            <>
+                              <div className="relative">
+                                <img 
+                                  src={menuItems[0]?.image || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'} 
+                                  alt="Chef's Special" 
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-amber-500 shadow-lg"
+                                />
+                                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center shadow-lg">
+                                  <FaStar className="text-sm text-white" />
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <h3 className="font-bold text-amber-50 text-lg">Chef's Special</h3>
+                                <Link to={`/menu/${menuItems[0]._id}`} className="text-amber-400 text-sm hover:text-amber-300 transition-colors">
+                                  {menuItems[0]?.name || 'Special Item'}
+                                </Link>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-amber-400 text-sm">More items available soon</div>
+                          )}
                         </div>
-                      </>
-                    ) : (
-                      <div className="text-amber-400 text-sm">More items available soon</div>
-                    )}
-                  </div>
-                </div>
+                      </div>
+                    </div>
+                  </section>
+
               </div>
             </div>
             
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Why Choose Us?</h2>
-              <div className="space-y-6">
-                {[
-                  { 
-                    icon: <FaBolt />, 
-                    title: "Instant Delivery", 
-                    text: "30-minute delivery guarantee in metro areas",
-                    color: "from-amber-400 to-orange-500" 
-                  },
-                  { 
-                    icon: <GiChefToque />, 
-                    title: "Master Chefs", 
-                    text: "Michelin-star trained culinary experts",
-                    color: "from-rose-400 to-pink-600" 
-                  },
-                  { 
-                    icon: <FaLeaf />, 
-                    title: "Premium Quality", 
-                    text: "Locally sourced organic ingredients",
-                    color: "from-emerald-400 to-cyan-600" 
-                  }
-                ].map((feature, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-start"
+            <motion.div
+              className="order-1 lg:order-2"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <div className="relative">
+                <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/20 rounded-full blur-xl"></div>
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-rose-500/20 rounded-full blur-xl"></div>
+                
+                <div className="relative z-10">
+                  <motion.h2 
+                    className="text-4xl font-bold mb-8 relative inline-block"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    viewport={{ once: true }}
                   >
-                    <div className={`text-2xl mr-4 bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`}>
-                      {feature.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-amber-100/80">{feature.text}</p>
-                    </div>
+                    Why Choose Us?
+                    <div className="absolute bottom-0 left-0 w-1/2 h-1 bg-gradient-to-r from-amber-400 to-rose-500 rounded-full"></div>
+                  </motion.h2>
+                  
+                  <div className="space-y-8">
+                    {[
+                      { 
+                        icon: <FaBolt className="text-2xl" />, 
+                        title: "Lightning Fast Delivery", 
+                        text: "30-minute delivery guarantee in metro areas with real-time tracking",
+                        color: "from-amber-400 to-orange-500",
+                        delay: 0.1
+                      },
+                      { 
+                        icon: <GiChefToque className="text-2xl" />, 
+                        title: "Master Chefs", 
+                        text: "Michelin-star trained culinary experts crafting exquisite dishes",
+                        color: "from-rose-400 to-pink-600",
+                        delay: 0.2
+                      },
+                      { 
+                        icon: <FaLeaf className="text-2xl" />, 
+                        title: "Premium Quality", 
+                        text: "Locally sourced organic ingredients for the freshest flavors",
+                        color: "from-emerald-400 to-cyan-600",
+                        delay: 0.3
+                      }
+                    ].map((feature, index) => (
+                      <motion.div 
+                        key={index} 
+                        className="flex items-start group"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: feature.delay }}
+                        viewport={{ once: true }}
+                        whileHover={{ x: 10 }}
+                      >
+                        <div className={`p-3 rounded-xl mr-4 bg-gradient-to-r ${feature.color} shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+                          {feature.icon}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold mb-2 text-amber-50">{feature.title}</h3>
+                          <p className="text-amber-100/80">{feature.text}</p>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                ))}
+                  
+                  <motion.div 
+                    className="mt-8"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    viewport={{ once: true }}
+                  >
+                    <Link 
+                      to="/about" 
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold rounded-full hover:from-amber-500 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    >
+                      Learn More About Us
+                      <FaArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </motion.div>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

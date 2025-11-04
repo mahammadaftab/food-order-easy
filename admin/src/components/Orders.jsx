@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTruck, FaCheck } from 'react-icons/fa';
+import { FaTruck, FaCheck, FaEllipsisV, FaClock, FaBox } from 'react-icons/fa';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -29,7 +30,7 @@ const Orders = () => {
     }
   };
 
-  const handleMarkAsDelivered = async (id) => {
+  const handleStatusUpdate = async (orderId, status) => {
     try {
       const token = localStorage.getItem('token');
       const config = {
@@ -38,15 +39,54 @@ const Orders = () => {
         }
       };
 
-      const res = await axios.put(`http://localhost:5001/api/v1/orders/${id}/deliver`, {}, config);
-      
+      // Update order status using the new endpoint
+      const res = await axios.put(`http://localhost:5001/api/v1/orders/${orderId}/status`, { status }, config);
+      const updatedOrder = res.data.data;
+
       // Update order status in state
       setOrders(orders.map(order => 
-        order._id === id ? {...order, isDelivered: true, deliveredAt: res.data.data.deliveredAt} : order
+        order._id === orderId ? updatedOrder : order
       ));
+      
+      // Close dropdown
+      setDropdownOpen(null);
     } catch (err) {
       alert(err.response?.data?.error?.message || 'Failed to update order status');
     }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'Delivered':
+        return 'bg-green-900/30 text-green-400';
+      case 'Paid':
+        return 'bg-blue-900/30 text-blue-400';
+      case 'In Process':
+        return 'bg-amber-900/30 text-amber-400';
+      case 'Out of Delivery':
+        return 'bg-purple-900/30 text-purple-400';
+      default:
+        return 'bg-yellow-900/30 text-yellow-400';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Delivered':
+        return <FaCheck className="mr-1" />;
+      case 'Paid':
+        return <FaCheck className="mr-1" />;
+      case 'In Process':
+        return <FaClock className="mr-1" />;
+      case 'Out of Delivery':
+        return <FaTruck className="mr-1" />;
+      default:
+        return <FaClock className="mr-1" />;
+    }
+  };
+
+  const getOrderStatus = (order) => {
+    return order.status || (order.isDelivered ? 'Delivered' : order.isPaid ? 'Paid' : 'Pending');
   };
 
   if (loading) {
@@ -107,30 +147,49 @@ const Orders = () => {
                       </td>
                       <td className="py-3 px-4 font-bold">₹{order.totalPrice}</td>
                       <td className="py-3 px-4">
-                        {order.isDelivered ? (
-                          <span className="bg-green-900/30 text-green-400 px-2 py-1 rounded-full text-sm">
-                            Delivered
-                          </span>
-                        ) : order.isPaid ? (
-                          <span className="bg-blue-900/30 text-blue-400 px-2 py-1 rounded-full text-sm">
-                            Paid
-                          </span>
-                        ) : (
-                          <span className="bg-yellow-900/30 text-yellow-400 px-2 py-1 rounded-full text-sm">
-                            Pending
-                          </span>
-                        )}
+                        <span className={`px-2 py-1 rounded-full text-sm ${getStatusClass(getOrderStatus(order))}`}>
+                          {getStatusIcon(getOrderStatus(order))}
+                          {getOrderStatus(order)}
+                        </span>
                       </td>
-                      <td className="py-3 px-4">
-                        {!order.isDelivered && (
+                      <td className="py-3 px-4 relative">
+                        <div className="relative">
                           <button
-                            onClick={() => handleMarkAsDelivered(order._id)}
+                            onClick={() => setDropdownOpen(dropdownOpen === order._id ? null : order._id)}
                             className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
                           >
-                            <FaTruck className="mr-1" />
-                            Mark Delivered
+                            <FaEllipsisV className="mr-1" />
+                            Actions
                           </button>
-                        )}
+                          
+                          {dropdownOpen === order._id && (
+                            <div className="absolute right-0 mt-1 w-48 bg-[#2D1B0E] border border-amber-900/30 rounded-lg shadow-lg z-10">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => handleStatusUpdate(order._id, 'In Process')}
+                                  className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20 flex items-center"
+                                >
+                                  <FaClock className="mr-2 text-amber-400" />
+                                  In Process
+                                </button>
+                                <button
+                                  onClick={() => handleStatusUpdate(order._id, 'Out of Delivery')}
+                                  className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20 flex items-center"
+                                >
+                                  <FaTruck className="mr-2 text-amber-400" />
+                                  Out of Delivery
+                                </button>
+                                <button
+                                  onClick={() => handleStatusUpdate(order._id, 'Delivered')}
+                                  className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20 flex items-center"
+                                >
+                                  <FaCheck className="mr-2 text-amber-400" />
+                                  Delivered
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

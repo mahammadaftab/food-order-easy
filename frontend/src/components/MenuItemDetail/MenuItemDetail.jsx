@@ -5,6 +5,7 @@ import { getReviews } from '../../services/reviewService';
 import { AppContext } from '../../context/AppContext.jsx';
 import ReviewCard from '../Review/ReviewCard';
 import AddReviewForm from '../Review/AddReviewForm';
+import Notification from '../Notification/Notification';
 import { FaStar, FaShoppingCart, FaPlus, FaMinus, FaArrowLeft, FaFire, FaCrown, FaHeart, FaTag } from 'react-icons/fa';
 
 const MenuItemDetail = () => {
@@ -19,6 +20,7 @@ const MenuItemDetail = () => {
   const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [relatedItems, setRelatedItems] = useState([]);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     loadMenuItem();
@@ -106,29 +108,63 @@ const MenuItemDetail = () => {
       quantity
     };
     addToCart(cartItem);
-    alert('Item added to cart!');
+    
+    // Show notification
+    setNotification({
+      message: `${item.name} added to cart!`,
+      type: 'success'
+    });
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   // Handle add to wishlist
   const handleAddToWishlist = async () => {
     if (!user) {
-      alert('Please login to add items to your wishlist');
+      setNotification({
+        message: 'Please login to add items to your wishlist',
+        type: 'warning'
+      });
       return;
     }
     
     try {
       await addToWishlist(item._id);
-      alert('Item added to wishlist!');
+      setNotification({
+        message: 'Item added to wishlist!',
+        type: 'success'
+      });
     } catch (err) {
-      alert('Failed to add item to wishlist');
+      setNotification({
+        message: 'Failed to add item to wishlist',
+        type: 'error'
+      });
     }
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   // Handle review submission
   const handleReviewAdded = (newReview) => {
     // Add the new review to the top of the list
     setReviews(prev => [newReview, ...prev]);
-    alert('Thank you for your review!');
+    
+    // Show notification
+    setNotification({
+      message: 'Thank you for your review!',
+      type: 'success'
+    });
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   if (loading) {
@@ -160,6 +196,15 @@ const MenuItemDetail = () => {
 
   return (
     <div className="pt-24 pb-16 px-4">
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <button 

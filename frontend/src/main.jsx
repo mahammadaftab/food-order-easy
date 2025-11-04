@@ -13,6 +13,7 @@ import Register from './components/Register/Register';
 import MenuItemDetail from './components/MenuItemDetail/MenuItemDetail';
 import Profile from './components/Profile/Profile';
 import Checkout from './components/Checkout/Checkout';
+import StripeCheckout from './components/StripeCheckout/StripeCheckout';
 import OrderConfirmation from './components/Order/OrderConfirmation';
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import Wishlist from './components/Wishlist/Wishlist';
@@ -38,6 +39,7 @@ const MainApp = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/stripe-checkout" element={<StripeCheckout />} />
             <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -47,6 +49,7 @@ const MainApp = () => {
   );
 };
 
+// Render the app
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <MainApp />
