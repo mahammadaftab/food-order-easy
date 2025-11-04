@@ -39,10 +39,12 @@ Create a `.env` file in the root directory with the following variables:
 
 ```
 NODE_ENV=development
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/foodorder
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRE=30d
+PORT=5001
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+MAX_FILE_UPLOAD=1000000
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
 ```
 
 ## API Endpoints
