@@ -6,7 +6,23 @@ const ErrorResponse = require('../utils/errorResponse');
 // @route   GET /api/v1/chefs
 // @access  Public
 const getChefs = asyncHandler(async (req, res, next) => {
-  const chefs = await Chef.find();
+  let query;
+  
+  // If admin is logged in, filter by admin role
+  if (req.admin) {
+    // Super-admin sees all chefs
+    if (req.admin.role === 'super-admin') {
+      query = Chef.find();
+    } else {
+      // Regular admin only sees their own chefs
+      query = Chef.find({ createdBy: req.admin.id });
+    }
+  } else {
+    // For public access, show all chefs
+    query = Chef.find();
+  }
+  
+  const chefs = await query;
   
   res.status(200).json({
     success: true,
@@ -37,6 +53,9 @@ const getChef = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/chefs
 // @access  Private/Admin
 const createChef = asyncHandler(async (req, res, next) => {
+  // Add the admin who created this chef
+  req.body.createdBy = req.admin.id;
+  
   const chef = await Chef.create(req.body);
 
   res.status(201).json({
@@ -54,6 +73,13 @@ const updateChef = asyncHandler(async (req, res, next) => {
   if (!chef) {
     return next(
       new ErrorResponse(`Chef not found with id of ${req.params.id}`, 404)
+    );
+  }
+  
+  // Check if admin owns this chef (unless they're a super-admin)
+  if (req.admin.role !== 'super-admin' && chef.createdBy.toString() !== req.admin.id) {
+    return next(
+      new ErrorResponse('Not authorized to update this chef', 401)
     );
   }
 
@@ -77,6 +103,13 @@ const deleteChef = asyncHandler(async (req, res, next) => {
   if (!chef) {
     return next(
       new ErrorResponse(`Chef not found with id of ${req.params.id}`, 404)
+    );
+  }
+  
+  // Check if admin owns this chef (unless they're a super-admin)
+  if (req.admin.role !== 'super-admin' && chef.createdBy.toString() !== req.admin.id) {
+    return next(
+      new ErrorResponse('Not authorized to delete this chef', 401)
     );
   }
 

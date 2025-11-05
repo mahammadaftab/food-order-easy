@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
 const connectDB = require('./config/db');
 const auth = require('./routes/auth');
 const menu = require('./routes/menu');
@@ -10,6 +11,7 @@ const wishlist = require('./routes/wishlist');
 const chefs = require('./routes/chefs');
 const reviews = require('./routes/reviews');
 const payments = require('./routes/payments');
+const admin = require('./routes/admin');
 
 // Load env vars
 dotenv.config({ path: './.env' });
@@ -29,6 +31,9 @@ app.use(express.json());
 // Enable CORS
 app.use(cors());
 
+// File upload middleware
+app.use(fileUpload());
+
 // Set static folder
 app.use(express.static('public'));
 
@@ -40,6 +45,7 @@ app.use('/api/v1/upload', upload);
 app.use('/api/v1/wishlist', wishlist);
 app.use('/api/v1/chefs', chefs);
 app.use('/api/v1/payments', payments);
+app.use('/api/v1/admin', admin);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

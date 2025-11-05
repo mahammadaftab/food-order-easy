@@ -28,7 +28,7 @@ const ManageChefs = () => {
 
   const loadChefs = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       const config = {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -83,7 +83,7 @@ const ManageChefs = () => {
   };
 
   const uploadImage = async (imageFile) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('adminToken');
     const formData = new FormData();
     formData.append('image', imageFile);
     
@@ -102,7 +102,7 @@ const ManageChefs = () => {
     e.preventDefault();
     
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       const config = {
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ const ManageChefs = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this chef?')) {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('adminToken');
         const config = {
           headers: {
             'Authorization': `Bearer ${token}`

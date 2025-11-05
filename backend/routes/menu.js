@@ -6,21 +6,24 @@ const {
   updateMenuItem,
   deleteMenuItem
 } = require('../controllers/menuController');
-const { protect, authorize } = require('../middleware/auth');
-const advancedResults = require('../middleware/advancedResults');
-const MenuItem = require('../models/MenuItem');
+const { protectAdmin, authorizeAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
 router
   .route('/')
-  .get(advancedResults(MenuItem), getMenuItems)
-  .post(protect, authorize('admin'), createMenuItem);
+  .get(getMenuItems)
+  .post(protectAdmin, authorizeAdmin('admin', 'super-admin'), createMenuItem);
+
+// Add a test endpoint that requires admin auth
+router
+  .route('/admin')
+  .get(protectAdmin, authorizeAdmin('admin', 'super-admin'), getMenuItems);
 
 router
   .route('/:id')
   .get(getMenuItem)
-  .put(protect, authorize('admin'), updateMenuItem)
-  .delete(protect, authorize('admin'), deleteMenuItem);
+  .put(protectAdmin, authorizeAdmin('admin', 'super-admin'), updateMenuItem)
+  .delete(protectAdmin, authorizeAdmin('admin', 'super-admin'), deleteMenuItem);
 
 module.exports = router;

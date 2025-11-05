@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { loginAdmin } from '../services/adminService';
+import Notification from './Notification';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +9,7 @@ const Login = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -17,56 +18,57 @@ const Login = () => {
       [e.target.name]: e.target.value
     });
     
-    // Clear error when user starts typing
-    if (error) {
-      setError('');
+    // Clear notification when user starts typing
+    if (notification) {
+      setNotification(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setNotification(null);
 
     try {
-      const res = await axios.post('http://localhost:5001/api/v1/auth/login', formData);
-      
-      // Save token to localStorage
-      localStorage.setItem('token', res.data.token);
+      const res = await loginAdmin(formData.email, formData.password);
       
       // Redirect to dashboard
       navigate('/');
     } catch (err) {
-      const errorMessage = err.response?.data?.error?.message || 'Login failed';
-      setError(errorMessage);
+      setNotification({
+        message: err.message || 'Login failed',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Clear error when component unmounts
+  // Clear notification when component unmounts
   useEffect(() => {
     return () => {
-      setError('');
+      setNotification(null);
     };
   }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a120b] to-[#3c2a21] px-4">
       <div className="bg-[#2D1B0E]/50 rounded-xl border border-amber-900/30 p-8 w-full max-w-md">
+        {notification && (
+          <Notification 
+            message={notification.message} 
+            type={notification.type} 
+            onClose={() => setNotification(null)} 
+          />
+        )}
+        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-amber-400 mb-2">Admin Login</h1>
           <p className="text-amber-100/80">Sign in to access admin panel</p>
         </div>
         
-        {error && (
-          <div className="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-        
         <form onSubmit={handleSubmit}>
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block mb-2 font-medium">Email</label>
             <input
               type="email"
@@ -75,6 +77,7 @@ const Login = () => {
               onChange={handleInputChange}
               required
               className="w-full rounded-lg bg-[#3c2a21] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 px-4 py-3"
+              placeholder="Enter your email"
             />
           </div>
           
@@ -87,6 +90,7 @@ const Login = () => {
               onChange={handleInputChange}
               required
               className="w-full rounded-lg bg-[#3c2a21] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 px-4 py-3"
+              placeholder="Enter your password"
             />
           </div>
           
@@ -98,6 +102,15 @@ const Login = () => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        
+        <div className="text-center mt-4">
+          <p className="text-sm text-amber-100/80">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-medium text-amber-500 hover:text-amber-400">
+              Register
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

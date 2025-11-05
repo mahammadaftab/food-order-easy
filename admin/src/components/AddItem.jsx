@@ -45,7 +45,7 @@ const AddItem = () => {
   };
 
   const uploadImage = async (imageFile) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('adminToken');
     const formData = new FormData();
     formData.append('image', imageFile);
     
@@ -67,7 +67,7 @@ const AddItem = () => {
     setSuccess(false);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       
       // Upload image first
       let imageUrl = '';
@@ -113,6 +113,7 @@ const AddItem = () => {
       setImagePreview(null);
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to add menu item');
+      console.error('Add item error:', err);
     } finally {
       setLoading(false);
     }

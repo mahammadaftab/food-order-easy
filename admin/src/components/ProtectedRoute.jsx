@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { getCurrentAdmin } from '../services/adminService';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, requiredRole }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       
       if (!token) {
         navigate('/login');
@@ -17,27 +17,33 @@ const ProtectedRoute = ({ children }) => {
 
       try {
         // Verify token with backend
-        const config = {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        };
+        const res = await getCurrentAdmin();
         
-        await axios.get('http://localhost:5001/api/v1/auth/me', config);
+        // Check if specific role is required
+        if (requiredRole && res.data.role !== requiredRole) {
+          // Redirect to appropriate page based on role
+          if (res.data.role === 'admin') {
+            navigate('/');
+          } else {
+            navigate('/login');
+          }
+          return;
+        }
+        
         setLoading(false);
       } catch (error) {
         // Token is invalid, redirect to login
-        localStorage.removeItem('token');
+        localStorage.removeItem('adminToken');
         navigate('/login');
       }
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, requiredRole]);
 
   if (loading) {
     return (
-      <div className="pt-20 pb-16 px-4 flex justify-center items-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a120b] to-[#3c2a21]">
         <div className="text-amber-400 text-xl">Loading...</div>
       </div>
     );

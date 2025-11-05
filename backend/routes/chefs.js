@@ -6,17 +6,17 @@ const {
   updateChef,
   deleteChef
 } = require('../controllers/chefController');
-const { protect, authorize } = require('../middleware/auth');
+const { protectAdmin, authorizeAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
 router.route('/')
   .get(getChefs)
-  .post(protect, authorize('admin'), createChef);
+  .post(protectAdmin, authorizeAdmin('admin', 'super-admin'), createChef);
 
 router.route('/:id')
   .get(getChef)
-  .put(protect, authorize('admin'), updateChef)
-  .delete(protect, authorize('admin'), deleteChef);
+  .put(protectAdmin, authorizeAdmin('admin', 'super-admin'), updateChef)
+  .delete(protectAdmin, authorizeAdmin('admin', 'super-admin'), deleteChef);
 
 module.exports = router;

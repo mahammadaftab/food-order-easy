@@ -13,14 +13,15 @@ const ManageItems = () => {
 
   const loadMenuItems = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       const config = {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       };
 
-      const res = await axios.get('http://localhost:5001/api/v1/menu', config);
+      // Use the admin endpoint that requires authentication
+      const res = await axios.get('http://localhost:5001/api/v1/menu/admin', config);
       setMenuItems(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -32,7 +33,7 @@ const ManageItems = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('adminToken');
         const config = {
           headers: {
             'Authorization': `Bearer ${token}`

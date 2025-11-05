@@ -106,6 +106,12 @@ const orderSchema = new mongoose.Schema({
     enum: ['Pending', 'In Process', 'Out of Delivery', 'Delivered'],
     default: 'Pending'
   },
+  // Add reference to the admin/restaurant this order is for
+  restaurant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

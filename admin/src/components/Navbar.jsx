@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaUtensils, FaList, FaShoppingCart, FaUserAlt, FaSignOutAlt } from 'react-icons/fa';
-import axios from 'axios';
+import { FaUtensils, FaList, FaShoppingCart, FaUserAlt, FaSignOutAlt, FaUsers } from 'react-icons/fa';
+import { getCurrentAdmin, logoutAdmin } from '../services/adminService';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [admin, setAdmin] = useState(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
@@ -25,32 +25,36 @@ const Navbar = () => {
     };
   }, []);
 
-  // Load user data
+  // Load admin data
   useEffect(() => {
-    const loadUser = async () => {
+    const loadAdmin = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('adminToken');
         if (token) {
-          const config = {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          };
-          
-          const res = await axios.get('http://localhost:5001/api/v1/auth/me', config);
-          setUser(res.data.data);
+          const res = await getCurrentAdmin();
+          setAdmin(res.data);
         }
       } catch (err) {
-        console.error('Failed to load user', err);
+        console.error('Failed to load admin', err);
+        // If there's an error loading admin data, redirect to login
+        localStorage.removeItem('adminToken');
+        navigate('/login');
       }
     };
 
-    loadUser();
-  }, []);
+    loadAdmin();
+  }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logoutAdmin();
+    } catch (err) {
+      console.error('Logout error', err);
+    } finally {
+      // Always remove token and redirect to login
+      localStorage.removeItem('adminToken');
+      navigate('/login');
+    }
   };
 
   const navLinks = [
@@ -59,6 +63,14 @@ const Navbar = () => {
     { name: 'Orders', to: '/orders', icon: <FaShoppingCart /> },
     { name: 'Manage Chefs', to: '/manage-chefs', icon: <FaUserAlt /> }
   ];
+
+  // Add Admin Approval link for super-admins
+  if (admin && admin.role === 'super-admin') {
+    navLinks.push({ name: 'Admin Approval', to: '/admin-approval', icon: <FaUsers /> });
+  }
+
+  // Check if admin is logged in
+  const isLoggedIn = !!localStorage.getItem('adminToken');
 
   return (
     <nav className="bg-[#2D1B0E] border-b border-amber-900/30 sticky top-0 z-50">
@@ -87,42 +99,49 @@ const Navbar = () => {
               </Link>
             ))}
             
-            {/* Profile Icon */}
-            <div className="relative ml-4" ref={profileMenuRef}>
-              <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center text-amber-100 hover:bg-amber-600/20 rounded-full p-1 transition-colors"
-              >
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8 rounded-full" />
-              </button>
-              
-              {/* Profile Dropdown */}
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#2D1B0E] border border-amber-900/30 rounded-lg shadow-lg z-10">
-                  <div className="py-1">
-                    <div className="px-4 py-2 border-b border-amber-900/30">
-                      <p className="text-sm font-medium">{user?.name || 'Admin User'}</p>
-                      <p className="text-xs text-amber-100/80">{user?.email || 'admin@example.com'}</p>
+            {/* Profile Icon - only show when logged in */}
+            {isLoggedIn && (
+              <div className="relative ml-4" ref={profileMenuRef}>
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="flex items-center text-amber-100 hover:bg-amber-600/20 rounded-full p-1 transition-colors"
+                >
+                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8 rounded-full" />
+                </button>
+                
+                {/* Profile Dropdown */}
+                {isProfileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[#2D1B0E] border border-amber-900/30 rounded-lg shadow-lg z-10">
+                    <div className="py-1">
+                      <div className="px-4 py-2 border-b border-amber-900/30">
+                        <p className="text-sm font-medium">{admin?.name || 'Admin User'}</p>
+                        <p className="text-xs text-amber-100/80">{admin?.email || 'admin@example.com'}</p>
+                        {admin?.role && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-600/20 text-amber-300 mt-1">
+                            {admin.role === 'super-admin' ? 'Super Admin' : 'Admin'}
+                          </span>
+                        )}
+                      </div>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        <FaUserAlt className="inline mr-2" />
+                        My Profile
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20"
+                      >
+                        <FaSignOutAlt className="inline mr-2" />
+                        Logout
+                      </button>
                     </div>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <FaUserAlt className="inline mr-2" />
-                      My Profile
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-amber-100 hover:bg-amber-600/20"
-                    >
-                      <FaSignOutAlt className="inline mr-2" />
-                      Logout
-                    </button>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -162,25 +181,30 @@ const Navbar = () => {
                 </Link>
               ))}
               
-              <Link
-                to="/profile"
-                className="block px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:bg-amber-600/20 flex items-center"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaUserAlt className="mr-2" />
-                My Profile
-              </Link>
-              
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:bg-amber-600/20 flex items-center"
-              >
-                <FaSignOutAlt className="mr-2" />
-                Logout
-              </button>
+              {/* Profile and Logout - only show when logged in */}
+              {isLoggedIn && (
+                <>
+                  <Link
+                    to="/profile"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:bg-amber-600/20 flex items-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FaUserAlt className="mr-2" />
+                    My Profile
+                  </Link>
+                  
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:bg-amber-600/20 flex items-center"
+                  >
+                    <FaSignOutAlt className="mr-2" />
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

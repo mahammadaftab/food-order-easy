@@ -1,15 +1,15 @@
 const express = require('express');
 const path = require('path');
 const { uploadPhoto } = require('../controllers/uploadController');
-const { protect, authorize } = require('../middleware/auth');
+const { protectAdmin, authorizeAdmin } = require('../middleware/auth');
 const ErrorResponse = require('../utils/errorResponse');
 
 const router = express.Router();
 
 // Upload route using express-fileupload instead of multer
-router.route('/').post(protect, authorize('admin'), (req, res, next) => {
+router.route('/').post(protectAdmin, authorizeAdmin('admin', 'super-admin'), (req, res, next) => {
   console.log('=== Upload Route Started (express-fileupload) ===');
-  console.log('User authenticated:', req.user ? req.user.email : 'No user');
+  console.log('Admin authenticated:', req.admin ? req.admin.email : 'No admin');
   console.log('Content-Type header:', req.headers['content-type']);
   console.log('Files in request:', req.files);
   

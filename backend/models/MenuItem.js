@@ -81,6 +81,12 @@ const menuItemSchema = new mongoose.Schema({
     default: 0
   },
   reviews: [reviewSchema],
+  // Add reference to the admin who created this item
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+    // Not required for creation, will be set by controller
+  },
   createdAt: {
     type: Date,
     default: Date.now

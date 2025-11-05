@@ -14,7 +14,7 @@ const Orders = () => {
 
   const loadOrders = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       const config = {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -22,7 +22,7 @@ const Orders = () => {
       };
 
       const res = await axios.get('http://localhost:5001/api/v1/orders', config);
-      setOrders(res.data);
+      setOrders(res.data.data);
       setLoading(false);
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to load orders');
@@ -32,7 +32,7 @@ const Orders = () => {
 
   const handleStatusUpdate = async (orderId, status) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken');
       const config = {
         headers: {
           'Authorization': `Bearer ${token}`

@@ -39,6 +39,12 @@ const chefSchema = new mongoose.Schema({
       default: ''
     }
   },
+  // Add reference to the admin who created this chef
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+    // Not required for creation, will be set by controller
+  },
   createdAt: {
     type: Date,
     default: Date.now
