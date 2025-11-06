@@ -39,7 +39,16 @@ const uploadPhoto = asyncHandler(async (req, res, next) => {
     console.log('=== Upload Controller Completed Successfully ===');
   } catch (error) {
     console.error('Error in upload controller:', error);
-    return next(new ErrorResponse('Upload failed: ' + error.message, 500));
+    console.error('Error stack:', error.stack);
+    // Don't call next() here as it might cause double callback
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          message: 'Upload failed: ' + error.message
+        }
+      });
+    }
   }
 });
 

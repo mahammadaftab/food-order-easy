@@ -1,13 +1,17 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext.jsx';
 import { getMyOrders } from '../../services/orderService';
+import { getUserMessages } from '../../services/contactService';
 import { updateProfile } from '../../services/userService';
-import { FaUser, FaShoppingBag, FaCalendar, FaRupeeSign, FaCheckCircle, FaTruck, FaClock, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUser, FaShoppingBag, FaCalendar, FaRupeeSign, FaCheckCircle, FaTruck, FaClock, FaEdit, FaSave, FaTimes, FaArrowRight, FaEnvelope } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user, logout, loadUser } = useContext(AppContext);
   const [orders, setOrders] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -17,17 +21,6 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      loadOrders();
-      // Initialize edit data with current user info
-      setEditData({
-        name: user.name,
-        email: user.email
-      });
-    }
-  }, [user]);
-
   const loadOrders = async () => {
     try {
       const data = await getMyOrders();
@@ -36,6 +29,19 @@ const Profile = () => {
     } catch (err) {
       console.error('Failed to load orders', err);
       setLoading(false);
+    }
+  };
+
+  const loadMessages = async () => {
+    try {
+      setMessagesLoading(true);
+      const data = await getUserMessages();
+      console.log('Messages data:', data); // Debug log
+      setMessages(data.data);
+      setMessagesLoading(false);
+    } catch (err) {
+      console.error('Failed to load messages', err);
+      setMessagesLoading(false);
     }
   };
 
@@ -92,8 +98,30 @@ const Profile = () => {
 
   // Format date
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Format date with time
+  const formatDateTime = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Get message status style
+  const getMessageStatusStyle = (replied) => {
+    if (replied) {
+      return { color: 'text-green-400', bg: 'bg-green-900/20', text: 'Replied' };
+    }
+    return { color: 'text-yellow-400', bg: 'bg-yellow-900/20', text: 'Pending' };
   };
 
   // Get order status style
@@ -105,6 +133,40 @@ const Profile = () => {
         return { color: 'text-blue-400', bg: 'bg-blue-900/20', icon: <FaTruck /> };
       default:
         return { color: 'text-yellow-400', bg: 'bg-yellow-900/20', icon: <FaClock /> };
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadOrders();
+      // Initialize edit data with current user info
+      setEditData({
+        name: user.name,
+        email: user.email
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (activeTab === 'messages' && user) {
+      loadMessages();
+    }
+  }, [activeTab, user]);
+
+  // Load message count for sidebar indicator
+  useEffect(() => {
+    if (user) {
+      loadMessageCount();
+    }
+  }, [user]);
+
+  const loadMessageCount = async () => {
+    try {
+      const data = await getUserMessages();
+      console.log('Message count data:', data); // Debug log
+      setMessages(data.data);
+    } catch (err) {
+      console.error('Failed to load message count', err);
     }
   };
 
@@ -153,6 +215,22 @@ const Profile = () => {
                 >
                   <FaShoppingBag className="mr-3" />
                   My Orders
+                </button>
+                <button
+                  onClick={() => setActiveTab('messages')}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center ${
+                    activeTab === 'messages'
+                      ? 'bg-amber-600/30 text-amber-400'
+                      : 'text-amber-100 hover:bg-amber-600/20'
+                  }`}
+                >
+                  <FaEnvelope className="mr-3" />
+                  My Messages
+                  {messages.length > 0 && (
+                    <span className="ml-auto bg-amber-600 text-white text-xs rounded-full px-2 py-1">
+                      {messages.length}
+                    </span>
+                  )}
                 </button>
                 <button
                   onClick={handleLogout}
@@ -356,9 +434,20 @@ const Profile = () => {
                             <p className="text-amber-100/80 text-sm mb-2">Items</p>
                             <div className="flex flex-wrap gap-2">
                               {order.orderItems.slice(0, 3).map((item, index) => (
-                                <span key={index} className="bg-[#3c2a21] px-3 py-1 rounded-full text-sm">
-                                  {item.name} x {item.quantity}
-                                </span>
+                                <div key={index} className="flex items-center bg-[#3c2a21] px-3 py-1 rounded-full text-sm">
+                                  {/* Display item image if available */}
+                                  <img 
+                                    src={item.menuItem?.image || item.image || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'} 
+                                    alt={item.name} 
+                                    className="w-6 h-6 object-cover rounded-full mr-2"
+                                    onError={(e) => {
+                                      e.target.src = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+                                    }}
+                                  />
+                                  <span>
+                                    {item.name} x {item.quantity}
+                                  </span>
+                                </div>
                               ))}
                               {order.orderItems.length > 3 && (
                                 <span className="bg-[#3c2a21] px-3 py-1 rounded-full text-sm">
@@ -367,6 +456,86 @@ const Profile = () => {
                               )}
                             </div>
                           </div>
+                          
+                          <div className="mt-4">
+                            <Link 
+                              to={`/order/${order._id}`} 
+                              className="text-amber-400 hover:text-amber-300 text-sm font-medium flex items-center"
+                            >
+                              View Details
+                              <FaArrowRight className="ml-1 text-xs" />
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'messages' && (
+              <div className="bg-[#2D1B0E]/50 rounded-xl border border-amber-900/30 p-6">
+                <h2 className="text-2xl font-bold mb-6">My Messages</h2>
+                
+                {messagesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="text-amber-400">Loading messages...</div>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FaEnvelope className="text-6xl text-amber-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-2">No messages yet</h3>
+                    <p className="text-amber-100/80 mb-4">You haven't sent any messages to us yet.</p>
+                    <Link 
+                      to="/contact" 
+                      className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
+                    >
+                      Send a Message
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {messages.map((message) => {
+                      const statusStyle = getMessageStatusStyle(message.replied);
+                      return (
+                        <div key={message._id} className="border border-amber-900/30 rounded-xl p-6">
+                          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+                            <div>
+                              <h3 className="font-bold text-lg">{message.subject}</h3>
+                              <p className="text-amber-100/80 text-sm">{formatDateTime(message.createdAt)}</p>
+                            </div>
+                            <div className={`flex items-center px-3 py-1 rounded-full text-sm ${statusStyle.bg} ${statusStyle.color}`}>
+                              {statusStyle.text}
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <p className="text-amber-100/80 text-sm mb-1">Your Message</p>
+                            <div className="bg-[#3c2a21] p-4 rounded-lg">
+                              <p>{message.message}</p>
+                            </div>
+                          </div>
+                          
+                          {message.replied && message.replyMessage && (
+                            <div className="mb-4">
+                              <p className="text-amber-100/80 text-sm mb-1">Our Reply</p>
+                              <div className="bg-green-900/20 p-4 rounded-lg border border-green-700/30">
+                                <p>{message.replyMessage}</p>
+                                <p className="text-amber-100/60 text-xs mt-2">
+                                  Replied on {formatDateTime(message.repliedAt)}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {!message.replied && (
+                            <div className="bg-amber-900/20 p-4 rounded-lg">
+                              <p className="text-amber-100/80 text-sm">
+                                We're reviewing your message and will get back to you soon.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

@@ -1,6 +1,6 @@
 import { FaShippingFast, FaLeaf, FaHeart } from 'react-icons/fa';
 import { FaBolt, FaRegClock, FaCalendarCheck, FaFire } from 'react-icons/fa';
-import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
+import { FaFacebook, FaInstagram, FaTwitter, FaYoutube, FaLinkedin, FaGithub } from 'react-icons/fa';
 import { FiUser, FiSmartphone, FiMail, FiHome } from 'react-icons/fi';
 import { FaUtensils } from 'react-icons/fa';
 import { GiChefToque, GiFoodTruck } from 'react-icons/gi';
@@ -149,10 +149,10 @@ export const additionalData = [
 
 // FOOTER 
 export const socialIcons = [
-    { icon: FaFacebook, link: 'https://www.facebook.com/share/1DjbwhdR4z/', color: '#3b5998', label: 'Facebook' },
-    { icon: FaInstagram, link: 'https://www.instagram.com/hexagondigitalservices?igsh=MW1nanQ2eXIycnRkZQ==', color: '#E1306C', label: 'Instagram' },
-    { icon: FaTwitter, link: 'https://x.com/HexagonDService?t=Vv5ReZAIbXONqkq_O0ksWQ&s=09', color: '#1DA1F2', label: 'Twitter' },
-    { icon: FaYoutube, link: 'https://youtube.com/@hexagondigitalservices?si=UnBt0AHI-ChN5Mze', color: '#FF0000', label: 'Youtube' },
+  { icon: FaLinkedin, link: 'https://www.linkedin.com/in/mahammad-aftab', color: '#0077B5', label: 'LinkedIn' },
+  { icon: FaGithub, link: 'https://github.com/mahammadaftab', color: '#333333', label: 'GitHub' },
+  { icon: FaInstagram, link: 'https://www.instagram.com/mahammad_aftab_attari/', color: '#E1306C', label: 'Instagram' },
+  { icon: FaYoutube, link: 'https://mahammadaftab.vercel.app/', color: '#FF0000', label: 'Youtube' },
 ];
 
 // LOGIN 
@@ -161,11 +161,11 @@ export const iconClass = "absolute top-1/2 transform -translate-y-1/2 left-3 tex
 
 // CONTACT
 export const contactFormFields = [
-    { label: 'Full Name', name: 'name', type: 'text', placeholder: 'Enter your full name', Icon: FiUser },
-    { label: 'Phone Number', name: 'phone', type: 'tel', placeholder: '+91 12345 67890', pattern: "[+]{0,1}[0-9]{10,13}", Icon: FiSmartphone },
-    { label: 'Email Address', name: 'email', type: 'email', placeholder: 'your.email@example.com', Icon: FiMail },
-    { label: 'Address', name: 'address', type: 'text', placeholder: 'Enter your delivery address', Icon: FiHome },
-    { label: 'Dish Name', name: 'dish', type: 'text', placeholder: 'Enter dish name (e.g., Butter Chicken)', Icon: FaUtensils },
+  { label: 'Full Name', name: 'name', type: 'text', placeholder: 'Enter your full name', Icon: FiUser, required: true },
+  { label: 'Email Address', name: 'email', type: 'email', placeholder: 'your.email@example.com', Icon: FiMail, required: true },
+  { label: 'Phone Number', name: 'phone', type: 'tel', placeholder: '+91 12345 67890', pattern: "[+]{0,1}[0-9]{10,13}", Icon: FiSmartphone },
+  { label: 'Subject', name: 'subject', type: 'text', placeholder: 'Enter subject', Icon: FaUtensils, required: true },
+  { label: 'Message', name: 'message', type: 'textarea', placeholder: 'Enter your message', Icon: FaUtensils, required: true },
 ];
 
 // BANNER

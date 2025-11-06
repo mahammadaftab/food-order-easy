@@ -578,10 +578,20 @@ const Checkout = () => {
               
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
-                  <div key={item._id || item.id} className="flex justify-between">
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-amber-100/80 text-sm">Qty: {item.quantity}</p>
+                  <div key={item._id || item.id} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-12 h-12 object-cover rounded-lg mr-3"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+                        }}
+                      />
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-amber-100/80 text-sm">Qty: {item.quantity}</p>
+                      </div>
                     </div>
                     <p className="font-bold">₹{item.price * item.quantity}</p>
                   </div>

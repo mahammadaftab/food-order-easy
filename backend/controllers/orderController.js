@@ -70,10 +70,12 @@ const addOrderItems = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/orders/:id
 // @access  Private
 const getOrderById = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id).populate(
-    'user',
-    'name email'
-  );
+  const order = await Order.findById(req.params.id)
+    .populate('user', 'name email')
+    .populate({
+      path: 'orderItems.menuItem',
+      select: 'name image price'
+    });
 
   if (order) {
     res.json(order);
@@ -110,7 +112,11 @@ const updateOrderToPaid = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/orders/myorders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res, next) => {
-  const orders = await Order.find({ user: req.user._id });
+  const orders = await Order.find({ user: req.user._id })
+    .populate({
+      path: 'orderItems.menuItem',
+      select: 'name image price'
+    });
   res.json(orders);
 });
 
@@ -132,6 +138,12 @@ const getOrders = asyncHandler(async (req, res, next) => {
     // For public access (should not happen), show all orders
     query = Order.find({}).populate('user', 'id name email');
   }
+  
+  // Populate order items with menu item details including image
+  query = query.populate({
+    path: 'orderItems.menuItem',
+    select: 'name image price'
+  });
   
   const orders = await query;
   res.json({

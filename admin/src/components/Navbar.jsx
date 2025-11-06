@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaUtensils, FaList, FaShoppingCart, FaUserAlt, FaSignOutAlt, FaUsers } from 'react-icons/fa';
+import { FaUtensils, FaList, FaShoppingCart, FaUserAlt, FaSignOutAlt, FaUsers, FaBuilding, FaEnvelope } from 'react-icons/fa';
 import { getCurrentAdmin, logoutAdmin } from '../services/adminService';
 
 const Navbar = () => {
@@ -61,12 +61,15 @@ const Navbar = () => {
     { name: 'Add Item', to: '/', icon: <FaUtensils /> },
     { name: 'Manage Items', to: '/manage-items', icon: <FaList /> },
     { name: 'Orders', to: '/orders', icon: <FaShoppingCart /> },
-    { name: 'Manage Chefs', to: '/manage-chefs', icon: <FaUserAlt /> }
+    { name: 'Manage Chefs', to: '/manage-chefs', icon: <FaUserAlt /> },
+    { name: 'Contact Messages', to: '/contact-messages', icon: <FaEnvelope /> }
   ];
 
   // Add Admin Approval link for super-admins
   if (admin && admin.role === 'super-admin') {
     navLinks.push({ name: 'Admin Approval', to: '/admin-approval', icon: <FaUsers /> });
+    // Add Company Profile link for super-admins to manage "Our Story"
+    navLinks.push({ name: 'Company Profile', to: '/company-profile', icon: <FaBuilding /> });
   }
 
   // Check if admin is logged in

@@ -93,15 +93,15 @@ const Footer = () => {
             <ul className="space-y-4 text-amber-100/80">
               <motion.li className="flex items-start" whileHover={{ x: 5 }}>
                 <FaRegEnvelope className="text-amber-400 mt-1 mr-3 flex-shrink-0" />
-                <span>info@foodiefrenzy.com</span>
+                <span>mdaftabeditz360@gmail.com</span>
               </motion.li>
               <motion.li className="flex items-start" whileHover={{ x: 5 }}>
                 <FaPhone className="text-amber-400 mt-1 mr-3 flex-shrink-0" />
-                <span>+1 (123) 456-7890</span>
+                <span>+91 8970580082</span>
               </motion.li>
               <motion.li className="flex items-start" whileHover={{ x: 5 }}>
                 <FaMapMarkerAlt className="text-amber-400 mt-1 mr-3 flex-shrink-0" />
-                <span>123 Food Street, Tasty City, FC 12345</span>
+                <span>Gadag, Karnataka, India</span>
               </motion.li>
             </ul>
           </motion.div>
@@ -145,7 +145,7 @@ const Footer = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-amber-100/60 mb-4 md:mb-0">
-              &copy; 2024 Foodie-Frenzy. All rights reserved.
+              &copy; 2025 Food-Order-Easy. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <motion.a 

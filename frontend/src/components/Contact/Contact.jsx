@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaInstagram, FaTwitter, FaYoutube, FaLinkedin, FaGithub } from 'react-icons/fa';
 import { contactFormFields } from '../../assets/dummydata';
 import Notification from '../Notification/Notification';
+import { createContactMessage } from '../../services/contactService';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
-    phone: '',
     email: '',
-    address: '',
-    dish: '',
-    query: ''
+    phone: '',
+    subject: '',
+    message: ''
   });
   const [notification, setNotification] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,52 +23,64 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you would send this data to your backend
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
     
-    // Show notification
-    setNotification({
-      message: 'Thank you for your message! We will get back to you soon.',
-      type: 'success'
-    });
-    
-    setFormData({
-      name: '',
-      phone: '',
-      email: '',
-      address: '',
-      dish: '',
-      query: ''
-    });
-    
-    // Auto-hide notification after 3 seconds
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
+    try {
+      // Send data to backend
+      await createContactMessage(formData);
+      
+      // Show success notification
+      setNotification({
+        message: 'Thank you for your message! We will get back to you soon.',
+        type: 'success'
+      });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      // Show error notification
+      setNotification({
+        message: error.message || 'Failed to send message. Please try again.',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
+      
+      // Auto-hide notification after 3 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+    }
   };
 
   const contactInfo = [
     {
       icon: <FaPhone />,
       title: 'Phone',
-      details: ['+1 (123) 456-7890', '+1 (987) 654-3210']
+      details: ['+91 8970580082', '+91 8618496722']
     },
     {
       icon: <FaEnvelope />,
       title: 'Email',
-      details: ['info@foodiefrenzy.com', 'support@foodiefrenzy.com']
+      details: ['mdaftabeditz360@gmail.com', 'support@foodordereasy.in']
     },
     {
       icon: <FaMapMarkerAlt />,
       title: 'Address',
-      details: ['123 Food Street, Tasty City, FC 12345']
+      details: ['Gadag, Karnataka, India']
     },
     {
       icon: <FaClock />,
       title: 'Working Hours',
-      details: ['24/7 Delivery Service', 'Customer Support: 9AM - 9PM']
+      details: ['24/7 Delivery Service', 'Customer Support: 10AM - 11PM']
     }
   ];
 
@@ -127,14 +140,16 @@ const Contact = () => {
               <h3 className="text-xl font-bold mb-4">Follow Us</h3>
               <div className="flex space-x-4">
                 {[
-                  { icon: <FaFacebook />, color: 'text-blue-600', link: '#' },
-                  { icon: <FaInstagram />, color: 'text-pink-500', link: '#' },
-                  { icon: <FaTwitter />, color: 'text-blue-400', link: '#' },
-                  { icon: <FaYoutube />, color: 'text-red-600', link: '#' }
+                  { icon: <FaLinkedin />, color: 'text-blue-700', link: 'https://www.linkedin.com/in/mahammad-aftab' },
+                  { icon: <FaGithub />, color: 'text-gray-400', link: 'https://github.com/mahammadaftab' },
+                  { icon: <FaInstagram />, color: 'text-pink-500', link: 'https://www.instagram.com/mahammad_aftab_attari/' },
+                  { icon: <FaYoutube />, color: 'text-red-600', link: 'https://mahammadaftab.vercel.app/' }
                 ].map((social, index) => (
                   <a 
                     key={index} 
                     href={social.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`bg-[#2D1B0E] p-3 rounded-full ${social.color} hover:bg-amber-600/20 transition-colors`}
                   >
                     {social.icon}
@@ -164,7 +179,7 @@ const Contact = () => {
                         onChange={handleChange}
                         placeholder={field.placeholder}
                         pattern={field.pattern}
-                        required
+                        required={field.required}
                         className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
                       />
                     </div>
@@ -185,7 +200,7 @@ const Contact = () => {
                         value={formData[field.name]}
                         onChange={handleChange}
                         placeholder={field.placeholder}
-                        required
+                        required={field.required}
                         rows="4"
                         className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
                       />
@@ -197,7 +212,7 @@ const Contact = () => {
                         onChange={handleChange}
                         placeholder={field.placeholder}
                         pattern={field.pattern}
-                        required
+                        required={field.required}
                         className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
                       />
                     )}
@@ -207,9 +222,10 @@ const Contact = () => {
               
               <button 
                 type="submit" 
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white px-6 py-4 rounded-lg font-bold transition-colors"
+                disabled={isSubmitting}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white px-6 py-4 rounded-lg font-bold transition-colors disabled:opacity-50"
               >
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

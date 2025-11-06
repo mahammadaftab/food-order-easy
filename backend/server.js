@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const fileUpload = require('express-fileupload');
 const connectDB = require('./config/db');
 const auth = require('./routes/auth');
 const menu = require('./routes/menu');
@@ -12,6 +11,8 @@ const chefs = require('./routes/chefs');
 const reviews = require('./routes/reviews');
 const payments = require('./routes/payments');
 const admin = require('./routes/admin');
+const companyProfile = require('./routes/companyProfile');
+const contact = require('./routes/contact');
 
 // Load env vars
 dotenv.config({ path: './.env' });
@@ -31,26 +32,29 @@ app.use(express.json());
 // Enable CORS
 app.use(cors());
 
-// File upload middleware
-app.use(fileUpload());
-
 // Set static folder
 app.use(express.static('public'));
 
 // Mount routers
 app.use('/api/v1/auth', auth);
-app.use('/api/v1/menu', menu, reviews);
+app.use('/api/v1/menu', menu);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/upload', upload);
 app.use('/api/v1/wishlist', wishlist);
 app.use('/api/v1/chefs', chefs);
+app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/payments', payments);
 app.use('/api/v1/admin', admin);
+app.use('/api/v1/company-profile', companyProfile);
+app.use('/api/v1/contact', contact);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   const error = app.get('env') === 'development' ? err : {};
   const status = err.status || 500;
+  
+  // Log the error for debugging
+  console.error('Global error handler:', err);
   
   return res.status(status).json({
     success: false,

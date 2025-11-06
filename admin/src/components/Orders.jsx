@@ -220,11 +220,13 @@ const Orders = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                         {order.orderItems?.map((item, index) => {
                           const itemStatus = getItemStatus(item, getOrderStatus(order));
+                          // Get image from the populated menuItem data
+                          const itemImage = item.menuItem?.image || item.image || null;
                           return (
                             <div key={index} className="bg-[#3c2a21]/50 rounded-lg p-4 flex items-center relative">
-                              {item.image ? (
+                              {itemImage ? (
                                 <img 
-                                  src={item.image} 
+                                  src={itemImage} 
                                   alt={item.name} 
                                   className="w-16 h-16 rounded-lg object-cover mr-4"
                                   onError={(e) => {
@@ -250,6 +252,7 @@ const Orders = () => {
                             </div>
                           );
                         })}
+
                       </div>
                       
                       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -18,6 +18,15 @@ const AddItem = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+
+  const handleImageLoad = (imageUrl) => {
+    const img = new Image();
+    img.onload = () => {
+      setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.src = imageUrl;
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -39,25 +48,53 @@ const AddItem = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        handleImageLoad(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const uploadImage = async (imageFile) => {
-    const token = localStorage.getItem('adminToken');
-    const formData = new FormData();
-    formData.append('image', imageFile);
+    // Check file size before upload (20MB limit)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (imageFile.size > maxSize) {
+      throw new Error(`File size too large. Maximum size is 20MB. Your file is ${(imageFile.size / (1024 * 1024)).toFixed(2)}MB.`);
+    }
     
-    const config = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}`
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      };
+      
+      console.log('Uploading image:', imageFile.name);
+      const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
+      console.log('Upload response:', res.data);
+      return res.data.data;
+    } catch (error) {
+      console.error('Upload error:', error);
+      if (error.response) {
+        // Server responded with error status
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+        throw new Error(error.response.data?.error?.message || 'Upload failed');
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Server may have crashed.');
+      } else {
+        // Something else happened
+        console.error('Error message:', error.message);
+        throw new Error(error.message || 'Upload failed');
       }
-    };
-    
-    const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
-    return res.data.data;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -111,6 +148,7 @@ const AddItem = () => {
         rating: 0
       });
       setImagePreview(null);
+      setImageDimensions({ width: 0, height: 0 });
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to add menu item');
       console.error('Add item error:', err);
@@ -215,11 +253,22 @@ const AddItem = () => {
                 />
                 {imagePreview && (
                   <div className="mt-4">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      className="w-32 h-32 object-cover rounded-lg border border-amber-700"
-                    />
+                    <div className="border-2 border-amber-700 rounded-lg p-2 inline-block">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="max-w-full h-auto rounded"
+                        style={{ 
+                          width: imageDimensions.width > 0 ? 'auto' : '128px',
+                          height: imageDimensions.width > 0 ? 'auto' : '128px'
+                        }}
+                      />
+                    </div>
+                    {imageDimensions.width > 0 && (
+                      <div className="mt-2 text-sm text-amber-400">
+                        Dimensions: {imageDimensions.width} × {imageDimensions.height} pixels
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

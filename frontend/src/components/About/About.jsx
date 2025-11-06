@@ -3,16 +3,45 @@ import { FaTwitter, FaInstagram, FaFacebookF, FaLinkedinIn, FaQuoteLeft } from '
 import TestimonialSlider from '../Testimonial/TestimonialSlider';
 import { features, stats } from '../../assets/dummydata';
 import { getChefs } from '../../services/chefService';
+import { getCompanyProfile } from '../../services/companyProfileService';
 
 const About = () => {
   const [hoveredStat, setHoveredStat] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [companyProfile, setCompanyProfile] = useState(null);
 
   useEffect(() => {
+    loadCompanyProfile();
     loadChefs();
   }, []);
+
+  const loadCompanyProfile = async () => {
+    try {
+      const data = await getCompanyProfile();
+      setCompanyProfile(data.data);
+    } catch (err) {
+      console.error('Failed to load company profile', err);
+      // Use default data if API fails
+      setCompanyProfile({
+        storyImage: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+        storyContent: "Founded in 2024, Food-Order-Easy began with a simple mission: to deliver exceptional culinary experiences to food lovers everywhere.\n\nWhat started as a small kitchen experiment has blossomed into a thriving food delivery service. Our journey began when our founder realized that exceptional food shouldn't be confined to restaurant walls.\n\nToday, we partner with over 200 local restaurants and employ 50+ delivery professionals to ensure that every meal reaches you in perfect condition, exactly when you need it.",
+        founder: {
+          name: 'Marco Yansen',
+          role: 'Founder & CEO',
+          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+          bio: "With over 15 years of experience in the culinary industry, Marco has been at the forefront of food innovation. His passion for bringing exceptional dining experiences to everyone led to the creation of Food-Order-Easy."
+        },
+        stats: {
+          restaurants: 200,
+          deliveryProfessionals: 50,
+          citiesServed: 15,
+          yearsOfService: 1
+        }
+      });
+    }
+  };
 
   const loadChefs = async () => {
     try {
@@ -51,36 +80,44 @@ const About = () => {
             Our <span className="text-amber-400">Story</span>
           </h1>
           <p className="text-xl max-w-3xl mx-auto text-amber-100/80 mb-12">
-            Founded in 2024, Food-Order-Easy began with a simple mission: to deliver exceptional culinary experiences to food lovers everywhere.
+            {companyProfile?.storyContent.split('\n\n')[0]}
           </p>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="relative rounded-3xl overflow-hidden border-8 border-amber-900/30 shadow-2xl">
+            <div className="relative">
+              <div className="relative rounded-3xl overflow-hidden border-8 border-amber-900/30 shadow-2xl inline-block mx-auto">
                 <img 
-                  src={teamMembers[0]?.image || ''} 
+                  src={companyProfile?.storyImage || "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"} 
                   alt="Our Restaurant" 
-                  className="w-full h-96 object-cover"
+                  className="max-w-full h-auto"
+                  style={{ 
+                    width: '100%',
+                    height: 'auto'
+                  }}
                 />
               </div>
             </div>
             <div className="text-left">
               <h2 className="text-3xl font-bold mb-6">From Passion to Plate</h2>
               <p className="text-amber-100/80 mb-6">
-                What started as a small kitchen experiment has blossomed into a thriving food delivery service. Our journey began when our founder, Marco Yansen, realized that exceptional food shouldn't be confined to restaurant walls.
+                {companyProfile?.storyContent.split('\n\n')[1]}
               </p>
               <p className="text-amber-100/80 mb-6">
-                Today, we partner with over 200 local restaurants and employ 50+ delivery professionals to ensure that every meal reaches you in perfect condition, exactly when you need it.
+                {companyProfile?.storyContent.split('\n\n')[2]}
               </p>
               <div className="flex items-center">
-                <img 
-                  src={teamMembers[0]?.image || ''} 
-                  alt="Marco Yansen" 
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+                <div className="relative">
+                  <div className="border-2 border-amber-700 rounded-full p-1 inline-block">
+                    <img 
+                      src={companyProfile?.founder?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"} 
+                      alt={companyProfile?.founder?.name || 'Founder'} 
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  </div>
+                </div>
                 <div className="ml-4">
-                  <h3 className="font-bold">{teamMembers[0]?.name || 'Founder'}</h3>
-                  <p className="text-amber-400">{teamMembers[0]?.role || 'Founder & CEO'}</p>
+                  <h3 className="font-bold">{companyProfile?.founder?.name || 'Founder'}</h3>
+                  <p className="text-amber-400">{companyProfile?.founder?.role || 'Founder & CEO'}</p>
                 </div>
               </div>
             </div>
@@ -92,20 +129,50 @@ const About = () => {
       <section className="py-16 bg-[#2D1B0E]/30 rounded-3xl my-16">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="text-center p-6 rounded-2xl bg-gradient-to-br from-[#2D1B0E] to-[#3c2a21] border border-amber-900/30 hover:border-amber-600/50 transition-all"
-                onMouseEnter={() => setHoveredStat(index)}
-                onMouseLeave={() => setHoveredStat(null)}
-              >
-                <div className={`inline-flex p-3 rounded-full bg-gradient-to-r ${stat.gradient} mb-4 transition-transform ${hoveredStat === index ? 'scale-110' : ''}`}>
-                  <stat.icon className="text-white text-xl" />
-                </div>
-                <h3 className="text-3xl font-bold mb-2">{stat.number}</h3>
-                <p className="text-amber-100/80">{stat.label}</p>
+            <div 
+              className="text-center p-6 rounded-2xl bg-gradient-to-br from-[#2D1B0E] to-[#3c2a21] border border-amber-900/30 hover:border-amber-600/50 transition-all"
+              onMouseEnter={() => setHoveredStat(0)}
+              onMouseLeave={() => setHoveredStat(null)}
+            >
+              <div className={`inline-flex p-3 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 mb-4 transition-transform ${hoveredStat === 0 ? 'scale-110' : ''}`}>
+                <FaQuoteLeft className="text-white text-xl" />
               </div>
-            ))}
+              <h3 className="text-3xl font-bold mb-2">{companyProfile?.stats?.restaurants || 200}</h3>
+              <p className="text-amber-100/80">Restaurants</p>
+            </div>
+            <div 
+              className="text-center p-6 rounded-2xl bg-gradient-to-br from-[#2D1B0E] to-[#3c2a21] border border-amber-900/30 hover:border-amber-600/50 transition-all"
+              onMouseEnter={() => setHoveredStat(1)}
+              onMouseLeave={() => setHoveredStat(null)}
+            >
+              <div className={`inline-flex p-3 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 mb-4 transition-transform ${hoveredStat === 1 ? 'scale-110' : ''}`}>
+                <FaQuoteLeft className="text-white text-xl" />
+              </div>
+              <h3 className="text-3xl font-bold mb-2">{companyProfile?.stats?.deliveryProfessionals || 50}+</h3>
+              <p className="text-amber-100/80">Delivery Professionals</p>
+            </div>
+            <div 
+              className="text-center p-6 rounded-2xl bg-gradient-to-br from-[#2D1B0E] to-[#3c2a21] border border-amber-900/30 hover:border-amber-600/50 transition-all"
+              onMouseEnter={() => setHoveredStat(2)}
+              onMouseLeave={() => setHoveredStat(null)}
+            >
+              <div className={`inline-flex p-3 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 mb-4 transition-transform ${hoveredStat === 2 ? 'scale-110' : ''}`}>
+                <FaQuoteLeft className="text-white text-xl" />
+              </div>
+              <h3 className="text-3xl font-bold mb-2">{companyProfile?.stats?.citiesServed || 15}+</h3>
+              <p className="text-amber-100/80">Cities Served</p>
+            </div>
+            <div 
+              className="text-center p-6 rounded-2xl bg-gradient-to-br from-[#2D1B0E] to-[#3c2a21] border border-amber-900/30 hover:border-amber-600/50 transition-all"
+              onMouseEnter={() => setHoveredStat(3)}
+              onMouseLeave={() => setHoveredStat(null)}
+            >
+              <div className={`inline-flex p-3 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 mb-4 transition-transform ${hoveredStat === 3 ? 'scale-110' : ''}`}>
+                <FaQuoteLeft className="text-white text-xl" />
+              </div>
+              <h3 className="text-3xl font-bold mb-2">{companyProfile?.stats?.yearsOfService || 1}</h3>
+              <p className="text-amber-100/80">Years of Service</p>
+            </div>
           </div>
         </div>
       </section>
@@ -145,7 +212,7 @@ const About = () => {
                 <div key={member._id || index} className="bg-[#2D1B0E]/50 rounded-xl overflow-hidden border border-amber-900/30 hover:border-amber-600/50 transition-all group">
                   <div className="relative">
                     <img 
-                      src={member.image} 
+                      src={member.image || "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"} 
                       alt={member.name} 
                       className="w-full h-80 object-cover"
                     />

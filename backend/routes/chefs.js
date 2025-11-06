@@ -14,6 +14,10 @@ router.route('/')
   .get(getChefs)
   .post(protectAdmin, authorizeAdmin('admin', 'super-admin'), createChef);
 
+// Add a test endpoint that requires admin auth
+router.route('/admin')
+  .get(protectAdmin, authorizeAdmin('admin', 'super-admin'), getChefs);
+
 router.route('/:id')
   .get(getChef)
   .put(protectAdmin, authorizeAdmin('admin', 'super-admin'), updateChef)

@@ -9,6 +9,8 @@ import Orders from './components/Orders';
 import ManageChefs from './components/ManageChefs';
 import Profile from './components/Profile';
 import AdminApproval from './components/AdminApproval';
+import CompanyProfile from './components/CompanyProfile';
+import ContactMessages from './components/ContactMessages';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
@@ -54,6 +56,12 @@ function App() {
               <ProtectedRoute><ManageChefs /></ProtectedRoute>
             </>
           } />
+          <Route path="/contact-messages" element={
+            <>
+              <Navbar />
+              <ProtectedRoute><ContactMessages /></ProtectedRoute>
+            </>
+          } />
           <Route path="/profile" element={
             <>
               <Navbar />
@@ -64,6 +72,12 @@ function App() {
             <>
               <Navbar />
               <ProtectedRoute requiredRole="super-admin"><AdminApproval /></ProtectedRoute>
+            </>
+          } />
+          <Route path="/company-profile" element={
+            <>
+              <Navbar />
+              <ProtectedRoute requiredRole="super-admin"><CompanyProfile /></ProtectedRoute>
             </>
           } />
         </Routes>

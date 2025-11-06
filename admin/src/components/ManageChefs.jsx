@@ -9,6 +9,7 @@ const ManageChefs = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingChef, setEditingChef] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -35,13 +36,22 @@ const ManageChefs = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5001/api/v1/chefs', config);
+      // Use the admin endpoint that requires authentication
+      const res = await axios.get('http://localhost:5001/api/v1/chefs/admin', config);
       setChefs(res.data.data);
       setLoading(false);
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to load chefs');
       setLoading(false);
     }
+  };
+
+  const handleImageLoad = (imageUrl) => {
+    const img = new Image();
+    img.onload = () => {
+      setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.src = imageUrl;
   };
 
   const handleInputChange = (e) => {
@@ -77,25 +87,53 @@ const ManageChefs = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        handleImageLoad(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const uploadImage = async (imageFile) => {
-    const token = localStorage.getItem('adminToken');
-    const formData = new FormData();
-    formData.append('image', imageFile);
+    // Check file size before upload (20MB limit)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (imageFile.size > maxSize) {
+      throw new Error(`File size too large. Maximum size is 20MB. Your file is ${(imageFile.size / (1024 * 1024)).toFixed(2)}MB.`);
+    }
     
-    const config = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}`
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      };
+      
+      console.log('Uploading image:', imageFile.name);
+      const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
+      console.log('Upload response:', res.data);
+      return res.data.data;
+    } catch (error) {
+      console.error('Upload error:', error);
+      if (error.response) {
+        // Server responded with error status
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+        throw new Error(error.response.data?.error?.message || 'Upload failed');
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Server may have crashed.');
+      } else {
+        // Something else happened
+        console.error('Error message:', error.message);
+        throw new Error(error.message || 'Upload failed');
       }
-    };
-    
-    const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
-    return res.data.data;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -150,6 +188,7 @@ const ManageChefs = () => {
         }
       });
       setImagePreview(null);
+      setImageDimensions({ width: 0, height: 0 });
       setEditingChef(null);
       setShowForm(false);
       loadChefs();
@@ -172,6 +211,7 @@ const ManageChefs = () => {
       }
     });
     setImagePreview(chef.image); // Set preview to existing image
+    handleImageLoad(chef.image);
     setEditingChef(chef);
     setShowForm(true);
   };
@@ -209,6 +249,7 @@ const ManageChefs = () => {
       }
     });
     setImagePreview(null);
+    setImageDimensions({ width: 0, height: 0 });
     setEditingChef(null);
     setShowForm(false);
   };
@@ -301,11 +342,22 @@ const ManageChefs = () => {
                     />
                     {(imagePreview || (editingChef && editingChef.image)) && (
                       <div className="mt-4">
-                        <img 
-                          src={imagePreview || editingChef.image} 
-                          alt="Preview" 
-                          className="w-32 h-32 object-cover rounded-lg border border-amber-700"
-                        />
+                        <div className="border-2 border-amber-700 rounded-lg p-2 inline-block">
+                          <img 
+                            src={imagePreview || editingChef.image} 
+                            alt="Preview" 
+                            className="max-w-full h-auto rounded"
+                            style={{ 
+                              width: imageDimensions.width > 0 ? 'auto' : '128px',
+                              height: imageDimensions.width > 0 ? 'auto' : '128px'
+                            }}
+                          />
+                        </div>
+                        {imageDimensions.width > 0 && (
+                          <div className="mt-2 text-sm text-amber-400">
+                            Dimensions: {imageDimensions.width} × {imageDimensions.height} pixels
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -395,11 +447,22 @@ const ManageChefs = () => {
                     <tr key={chef._id} className="border-b border-amber-900/30 hover:bg-[#3c2a21]/30">
                       <td className="py-3 px-4">
                         {chef.image ? (
-                          <img 
-                            src={chef.image} 
-                            alt={chef.name} 
-                            className="w-12 h-12 object-cover rounded-lg"
-                          />
+                          <div className="relative">
+                            <div className="border border-amber-700 rounded-lg p-1 inline-block">
+                              <img 
+                                src={chef.image} 
+                                alt={chef.name} 
+                                className="w-12 h-12 object-cover rounded"
+                                style={{ 
+                                  width: chef.imageDimensions?.width > 0 ? 'auto' : '48px',
+                                  height: chef.imageDimensions?.width > 0 ? 'auto' : '48px'
+                                }}
+                              />
+                            </div>
+                            <div className="absolute bottom-0 right-0 bg-black/50 text-white text-xs px-1 rounded">
+                              {chef.imageDimensions?.width || 'N/A'}×{chef.imageDimensions?.height || 'N/A'}
+                            </div>
+                          </div>
                         ) : (
                           <div className="w-12 h-12 bg-amber-900/30 rounded-lg flex items-center justify-center">
                             <span className="text-amber-400">No Image</span>

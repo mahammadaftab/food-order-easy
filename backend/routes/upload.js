@@ -1,72 +1,77 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { uploadPhoto } = require('../controllers/uploadController');
 const { protectAdmin, authorizeAdmin } = require('../middleware/auth');
 const ErrorResponse = require('../utils/errorResponse');
 
 const router = express.Router();
 
-// Upload route using express-fileupload instead of multer
-router.route('/').post(protectAdmin, authorizeAdmin('admin', 'super-admin'), (req, res, next) => {
-  console.log('=== Upload Route Started (express-fileupload) ===');
-  console.log('Admin authenticated:', req.admin ? req.admin.email : 'No admin');
-  console.log('Content-Type header:', req.headers['content-type']);
-  console.log('Files in request:', req.files);
-  
-  try {
-    // Check if files were uploaded
-    if (!req.files || !req.files.image) {
-      console.log('No file found in request');
-      return next(new ErrorResponse('Please upload a file', 400));
-    }
-
-    const file = req.files.image;
-    console.log('File received:', file);
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
     
-    // Validate file type
-    if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png') {
-      console.log('Invalid file type:', file.mimetype);
-      return next(new ErrorResponse('Only JPEG and PNG files are allowed', 400));
+    // Ensure uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
     }
     
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      console.log('File too large:', file.size);
-      return next(new ErrorResponse('File size too large. Maximum size is 5MB', 400));
-    }
-    
-    // Generate unique filename
-    const fileExtension = path.extname(file.name);
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const fileExtension = path.extname(file.originalname);
     const filename = `photo_${Date.now()}_${Math.round(Math.random() * 1e9)}${fileExtension}`;
-    console.log('Generated filename:', filename);
-    
-    // Move file to uploads directory
-    const uploadPath = path.join(__dirname, '..', 'public', 'uploads', filename);
-    console.log('Upload path:', uploadPath);
-    
-    file.mv(uploadPath, (err) => {
-      if (err) {
-        console.error('File move error:', err);
-        return next(new ErrorResponse('File upload failed', 500));
-      }
+    cb(null, filename);
+  }
+});
+
+// File filter to only allow images
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new ErrorResponse(`Only JPEG, JPG and PNG files are allowed. Received: ${file.mimetype}`, 400), false);
+  }
+};
+
+// Multer upload configuration with 20MB file size limit
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024 // 20MB limit
+  }
+});
+
+// Upload route using multer
+router.route('/')
+  .post(
+    protectAdmin, 
+    authorizeAdmin('admin', 'super-admin'),
+    upload.single('image'),
+    (req, res, next) => {
+      console.log('=== Multer Upload Route ===');
+      console.log('Admin authenticated:', req.admin ? req.admin.email : 'No admin');
+      console.log('File received:', req.file);
       
-      console.log('File uploaded successfully');
+      if (!req.file) {
+        return next(new ErrorResponse('Please upload a valid image file (JPEG or PNG)', 400));
+      }
       
       // Attach file info to request for controller
       req.file = {
-        filename: filename,
-        originalname: file.name,
-        mimetype: file.mimetype,
-        size: file.size
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
       };
       
       // Proceed to controller
       uploadPhoto(req, res, next);
-    });
-  } catch (error) {
-    console.error('Error in upload route:', error);
-    return next(new ErrorResponse('Upload failed: ' + error.message, 500));
-  }
-});
+    }
+  );
 
 module.exports = router;
