@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowRight, FaStar, FaBolt, FaLeaf, FaUtensils, FaShoppingCart, FaUser, FaBars, FaTimes, FaFire } from 'react-icons/fa';
-import { GiChefToque } from 'react-icons/gi';
+import { FaArrowRight, FaStar, FaBolt, FaLeaf, FaUtensils, FaShoppingCart, FaUser, FaBars, FaTimes, FaFire, FaCrown, FaHeart, FaPlus } from 'react-icons/fa';
+import { GiChefToque, GiForkKnifeSpoon } from 'react-icons/gi';
 import { dummyMenuData as menuItemsData } from './assets/OmDD';
 import { getMenuItems } from './services/menuService';
 import Navbar from './components/Navbar/Navbar';
@@ -343,7 +343,7 @@ const App = () => {
                         delay: 0.1
                       },
                       { 
-                        icon: <GiChefToqueIcon className="text-2xl" />, 
+                        icon: <GiChefToque className="text-2xl" />, 
                         title: "Master Chefs", 
                         text: "Michelin-star trained culinary experts crafting exquisite dishes",
                         color: "from-rose-400 to-pink-600",
