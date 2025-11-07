@@ -26,11 +26,39 @@ connectDB();
 
 const app = express();
 
+// Handle preflight requests for all routes
+app.options('*', cors());
+
 // Body parser
 app.use(express.json());
 
-// Enable CORS
-app.use(cors());
+// Enable CORS with specific configuration for production
+if (process.env.NODE_ENV === 'production') {
+  app.use(cors({
+    origin: [
+      'https://food-order-easy-frontend.onrender.com',
+      'https://food-order-easy-admin.onrender.com',
+      'https://food-order-easy.onrender.com'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+    exposedHeaders: ['Authorization']
+  }));
+} else {
+  // Development CORS - more permissive
+  app.use(cors({
+    origin: [
+      'http://localhost:5173',  // Frontend dev server
+      'http://localhost:5174',  // Admin panel dev server
+      'http://localhost:3000',  // Alternative dev server
+      'https://food-order-easy-frontend.onrender.com',
+      'https://food-order-easy-admin.onrender.com',
+      'https://food-order-easy.onrender.com'
+    ],
+    credentials: true
+  }));
+}
 
 // Set static folder
 app.use(express.static('public'));
