@@ -1,11 +1,12 @@
 const express = require('express');
 const {
+  addOrderItems,
+  getOrderById,
+  updateOrderToPaid,
+  getMyOrders,
   getOrders,
-  getOrder,
-  createOrder,
-  updateOrder,
-  deleteOrder,
-  getMyOrders
+  updateOrderToDelivered,
+  updateOrderStatus
 } = require('../controllers/orderController');
 const { protect, protectAdmin, authorizeAdmin } = require('../middleware/auth');
 
@@ -26,16 +27,25 @@ router.use((req, res, next) => {
   next();
 });
 
+// Create order route
 router.route('/')
-  .get(protectAdmin, authorizeAdmin('admin', 'super-admin'), getOrders)
-  .post(protect, createOrder);
+  .post(protect, addOrderItems)
+  .get(protectAdmin, authorizeAdmin('admin', 'super-admin'), getOrders);
 
+// Get logged in user's orders
 router.route('/myorders')
   .get(protect, getMyOrders);
 
+// Single order routes
 router.route('/:id')
-  .get(protect, getOrder)
-  .put(protectAdmin, authorizeAdmin('admin', 'super-admin'), updateOrder)
-  .delete(protectAdmin, authorizeAdmin('admin', 'super-admin'), deleteOrder);
+  .get(protect, getOrderById)
+  .put(protect, updateOrderToPaid);
+
+// Admin update order status routes
+router.route('/:id/deliver')
+  .put(protectAdmin, authorizeAdmin('admin', 'super-admin'), updateOrderToDelivered);
+
+router.route('/:id/status')
+  .put(protectAdmin, authorizeAdmin('admin', 'super-admin'), updateOrderStatus);
 
 module.exports = router;
