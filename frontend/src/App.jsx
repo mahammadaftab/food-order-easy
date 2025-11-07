@@ -1,31 +1,49 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getMenuItems } from './services/menuService';
-import SearchBar from './components/Search/SearchBar';
-import PromotionalBanner from './components/Banner/PromotionalBanner';
-import FeaturedCarousel from './components/Carousel/FeaturedCarousel';
-import Notification from './components/Notification/Notification';
-import { AppContext } from './context/AppContext.jsx';
-import { FaShoppingCart, FaUser, FaSearch, FaStar, FaFire, FaBolt, FaArrowRight, FaLeaf, FaPlay, FaPause, FaPlus, FaHeart } from 'react-icons/fa';
-import { GiChefToque, GiForkKnifeSpoon } from 'react-icons/gi';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaArrowRight, FaStar, FaBolt, FaLeaf, FaUtensils, FaShoppingCart, FaUser, FaBars, FaTimes, FaFire } from 'react-icons/fa';
+import { GiChefToque } from 'react-icons/gi';
+import { dummyMenuData as menuItemsData } from './assets/OmDD';
+import { getMenuItems } from './services/menuService';
+import Navbar from './components/Navbar/Navbar';
+import Footer from './components/Footer/Footer';
+import Menu from './components/Menu/Menu';
+import MenuItemDetail from './components/MenuItemDetail/MenuItemDetail';
+import Cart from './components/Cart/Cart';
+import Login from './components/Login/Login';
+import Register from './components/Register/Register';
+import Profile from './components/Profile/Profile';
+import About from './components/About/About';
+import Contact from './components/Contact/Contact';
+import OrderConfirmation from './components/Order/OrderConfirmation';
+import Checkout from './components/Checkout/Checkout';
+import Wishlist from './components/Wishlist/Wishlist';
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
+import NotFound from './components/NotFound/NotFound';
+import SearchBar from './components/Search/SearchBar';
+import CategoryFilter from './components/Category/CategoryFilter';
+import FeaturedCarousel from './components/Carousel/FeaturedCarousel';
+import PromotionalBanner from './components/Banner/PromotionalBanner';
+import TestimonialSlider from './components/Testimonial/TestimonialSlider';
+import LoadingSpinner from './components/Loading/LoadingSpinner';
+import Notification from './components/Notification/Notification';
+import StripeCheckout from './components/StripeCheckout/StripeCheckout';
+import { AppProvider } from './context/AppContext';
+import AboutImage from './assets/AboutImage.png'; // Import the image
 
 // Test to verify icons are working
 console.log('Testing icon imports:');
+console.log('FaArrowRight:', FaArrowRight);
+console.log('FaStar:', FaStar);
+console.log('FaBolt:', FaBolt);
+console.log('FaLeaf:', FaLeaf);
+console.log('GiChefToque:', GiChefToque);
+console.log('FaUtensils:', FaUtensils);
 console.log('FaShoppingCart:', FaShoppingCart);
 console.log('FaUser:', FaUser);
-console.log('FaSearch:', FaSearch);
-console.log('FaStar:', FaStar);
+console.log('FaBars:', FaBars);
+console.log('FaTimes:', FaTimes);
 console.log('FaFire:', FaFire);
-console.log('FaBolt:', FaBolt);
-console.log('FaArrowRight:', FaArrowRight);
-console.log('FaLeaf:', FaLeaf);
-console.log('FaPlay:', FaPlay);
-console.log('FaPause:', FaPause);
-console.log('FaPlus:', FaPlus);
-console.log('FaHeart:', FaHeart);
-console.log('GiChefToque:', GiChefToque);
-console.log('GiForkKnifeSpoon:', GiForkKnifeSpoon);
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -247,7 +265,7 @@ const App = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden border-8 border-amber-900/30 shadow-2xl transform transition-transform duration-500">
                   <img 
-                    src="/src/assets/AboutImage.png" 
+                    src={AboutImage} 
                     alt="Why Choose Us" 
                     className="w-full h-auto object-contain max-h-[600px]"
                   />
@@ -325,7 +343,7 @@ const App = () => {
                         delay: 0.1
                       },
                       { 
-                        icon: <GiChefToque className="text-2xl" />, 
+                        icon: <GiChefToqueIcon className="text-2xl" />, 
                         title: "Master Chefs", 
                         text: "Michelin-star trained culinary experts crafting exquisite dishes",
                         color: "from-rose-400 to-pink-600",
