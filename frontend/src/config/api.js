@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an axios instance
 const API = axios.create({
-  baseURL: 'http://localhost:5001/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1',
   headers: {
     'Content-Type': 'application/json'
   }
