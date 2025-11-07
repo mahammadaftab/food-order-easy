@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowRight, FaStar, FaBolt, FaLeaf, FaUtensils, FaShoppingCart, FaUser, FaBars, FaTimes, FaFire } from 'react-icons/fa';
@@ -28,7 +28,7 @@ import TestimonialSlider from './components/Testimonial/TestimonialSlider';
 import LoadingSpinner from './components/Loading/LoadingSpinner';
 import Notification from './components/Notification/Notification';
 import StripeCheckout from './components/StripeCheckout/StripeCheckout';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, AppContext } from './context/AppContext';
 import AboutImage from './assets/AboutImage.png'; // Import the image
 
 // Test to verify icons are working
