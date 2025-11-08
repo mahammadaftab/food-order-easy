@@ -26,12 +26,6 @@ connectDB();
 
 const app = express();
 
-// Handle preflight requests for all routes
-app.options('*', cors());
-
-// Body parser
-app.use(express.json());
-
 // Enable CORS with specific configuration for production
 if (process.env.NODE_ENV === 'production') {
   app.use(cors({
@@ -59,6 +53,12 @@ if (process.env.NODE_ENV === 'production') {
     credentials: true
   }));
 }
+
+// Handle preflight requests for all routes
+app.options('*', cors());
+
+// Body parser
+app.use(express.json());
 
 // Set static folder
 app.use(express.static('public'));
