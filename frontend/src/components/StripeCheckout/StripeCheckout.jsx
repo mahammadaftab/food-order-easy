@@ -148,11 +148,24 @@ const StripeCheckout = () => {
     // Load Stripe
     const loadStripePromise = async () => {
       try {
-        const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+        const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+        
+        // Check if the publishable key exists and is not a placeholder
+        if (!publishableKey || publishableKey.includes('your_stripe_publishable_key')) {
+          console.warn('Stripe publishable key is missing or invalid');
+          setNotification({
+            message: 'Payment system not properly configured. Please contact support.',
+            type: 'error'
+          });
+          return;
+        }
+        
+        const stripe = await loadStripe(publishableKey);
         setStripePromise(stripe);
       } catch (error) {
+        console.error('Failed to load Stripe:', error);
         setNotification({
-          message: 'Failed to load payment processor',
+          message: 'Failed to load payment processor. Please try again later.',
           type: 'error'
         });
       }
@@ -234,9 +247,18 @@ const StripeCheckout = () => {
       return;
     }
     
-    if (!orderData || !stripePromise) {
+    // Check if Stripe is properly loaded
+    if (!stripePromise) {
       setNotification({
-        message: 'Payment system not ready',
+        message: 'Payment system not ready. Please refresh the page and try again.',
+        type: 'error'
+      });
+      return;
+    }
+    
+    if (!orderData) {
+      setNotification({
+        message: 'Order data is missing',
         type: 'error'
       });
       return;
