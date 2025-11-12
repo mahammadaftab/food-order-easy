@@ -13,6 +13,7 @@ const payments = require('./routes/payments');
 const admin = require('./routes/admin');
 const companyProfile = require('./routes/companyProfile');
 const contact = require('./routes/contact');
+const gemini = require('./routes/gemini');
 
 // Load env vars
 dotenv.config({ path: './.env' });
@@ -75,6 +76,7 @@ app.use('/api/v1/payments', payments);
 app.use('/api/v1/admin', admin);
 app.use('/api/v1/company-profile', companyProfile);
 app.use('/api/v1/contact', contact);
+app.use('/api/v1/gemini', gemini);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

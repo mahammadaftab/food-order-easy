@@ -8,7 +8,15 @@ const ADMIN_API = axios.create({
   }
 });
 
-// Add a request interceptor
+// Create an axios instance for general API (including Gemini)
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add a request interceptor for ADMIN_API
 ADMIN_API.interceptors.request.use(
   (config) => {
     // Get token from local storage
@@ -26,8 +34,64 @@ ADMIN_API.interceptors.request.use(
   }
 );
 
-// Add a response interceptor
+// Add a request interceptor for API
+API.interceptors.request.use(
+  (config) => {
+    // Get token from local storage
+    const token = localStorage.getItem('adminToken');
+    
+    // If token exists, add it to headers
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor for ADMIN_API
 ADMIN_API.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Handle common errors
+    if (error.response) {
+      // Server responded with error status
+      switch (error.response.status) {
+        case 401:
+          // Unauthorized - clear token and redirect to login
+          localStorage.removeItem('adminToken');
+          window.location.href = '/login';
+          break;
+        case 403:
+          // Forbidden - show error message
+          console.error('Access forbidden');
+          break;
+        case 500:
+          // Server error - show error message
+          console.error('Server error');
+          break;
+        default:
+          console.error('An error occurred');
+      }
+    } else if (error.request) {
+      // Network error
+      console.error('Network error');
+    } else {
+      // Other errors
+      console.error('Error', error.message);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor for API
+API.interceptors.response.use(
   (response) => {
     return response;
   },
@@ -164,6 +228,29 @@ export const updateAdminStatus = async (adminId, status) => {
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.error?.message || 'Failed to update admin status');
+  }
+};
+
+// Analyze food image with Gemini AI
+export const analyzeFoodImage = async (imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    
+    // Get token from local storage
+    const token = localStorage.getItem('adminToken');
+    
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    };
+    
+    const res = await API.post('/gemini/analyze-food', formData, config);
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || 'Failed to analyze image with AI');
   }
 };
 

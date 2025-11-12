@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { analyzeFoodImage } from '../services/adminService';
 
 const AddItem = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const AddItem = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
@@ -94,6 +96,34 @@ const AddItem = () => {
         console.error('Error message:', error.message);
         throw new Error(error.message || 'Upload failed');
       }
+    }
+  };
+
+  // New function to analyze image with Gemini AI
+  const analyzeImage = async (imageFile) => {
+    setAnalyzing(true);
+    setError('');
+    
+    try {
+      console.log('Analyzing image with Gemini AI:', imageFile.name);
+      const res = await analyzeFoodImage(imageFile);
+      console.log('Analysis response:', res);
+      
+      // Update form data with AI analysis results (only name, category, and description)
+      const analysisData = res.data;
+      setFormData(prev => ({
+        ...prev,
+        name: analysisData.foodName,
+        description: analysisData.description,
+        category: analysisData.category
+        // Note: We're not updating price, rating, or boolean flags (isPopular, isBestSeller, isSpecial)
+        // These should be set manually by the admin
+      }));
+    } catch (error) {
+      console.error('Analysis error:', error);
+      setError(error.message || 'Failed to analyze image');
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -267,6 +297,25 @@ const AddItem = () => {
                     {imageDimensions.width > 0 && (
                       <div className="mt-2 text-sm text-amber-400">
                         Dimensions: {imageDimensions.width} × {imageDimensions.height} pixels
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* New Analyze with AI button */}
+                {formData.image && (
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => analyzeImage(formData.image)}
+                      disabled={analyzing || loading}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors disabled:opacity-50"
+                    >
+                      {analyzing ? 'Analyzing...' : 'Analyze with AI'}
+                    </button>
+                    {analyzing && (
+                      <div className="mt-2 text-sm text-amber-400">
+                        Analyzing image with Gemini AI...
                       </div>
                     )}
                   </div>
