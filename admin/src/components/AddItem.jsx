@@ -76,7 +76,8 @@ const AddItem = () => {
       };
       
       console.log('Uploading image:', imageFile.name);
-      const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.post(`${baseURL}/upload`, formData, config);
       console.log('Upload response:', res.data);
       return res.data.data;
     } catch (error) {
@@ -162,7 +163,8 @@ const AddItem = () => {
         }
       };
 
-      await axios.post('http://localhost:5001/api/v1/menu', menuItemData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      await axios.post(`${baseURL}/menu`, menuItemData, config);
       
       setSuccess(true);
       // Reset form

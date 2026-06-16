@@ -37,7 +37,8 @@ const ManageChefs = () => {
       };
 
       // Use the admin endpoint that requires authentication
-      const res = await axios.get('http://localhost:5001/api/v1/chefs/admin', config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.get(`${baseURL}/chefs/admin`, config);
       setChefs(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -113,7 +114,8 @@ const ManageChefs = () => {
       };
       
       console.log('Uploading image:', imageFile.name);
-      const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.post(`${baseURL}/upload`, formData, config);
       console.log('Upload response:', res.data);
       return res.data.data;
     } catch (error) {
@@ -168,10 +170,12 @@ const ManageChefs = () => {
 
       if (editingChef) {
         // Update existing chef
-        await axios.put(`http://localhost:5001/api/v1/chefs/${editingChef._id}`, chefData, config);
+        const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+        await axios.put(`${baseURL}/chefs/${editingChef._id}`, chefData, config);
       } else {
         // Create new chef
-        await axios.post('http://localhost:5001/api/v1/chefs', chefData, config);
+        const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+        await axios.post(`${baseURL}/chefs`, chefData, config);
       }
 
       // Reset form and refresh data
@@ -226,7 +230,8 @@ const ManageChefs = () => {
           }
         };
 
-        await axios.delete(`http://localhost:5001/api/v1/chefs/${id}`, config);
+        const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+        await axios.delete(`${baseURL}/chefs/${id}`, config);
         // Remove chef from state
         setChefs(chefs.filter(chef => chef._id !== id));
       } catch (err) {

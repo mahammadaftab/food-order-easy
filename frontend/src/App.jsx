@@ -76,20 +76,23 @@ const App = () => {
     try {
       setLoading(true);
       const data = await getMenuItems();
-      console.log('Menu items loaded in App.jsx:', data.data);
-      setMenuItems(data.data);
+      console.log('Menu items loaded in App.jsx:', data?.data);
+      const items = data?.data || [];
+      setMenuItems(items);
       
       // Set featured items (only popular or best sellers)
-      const featured = data.data.filter(item => item.isPopular || item.isBestSeller);
+      const featured = items.filter(item => item.isPopular || item.isBestSeller);
       
-      console.log('All menu items:', data.data);
+      console.log('All menu items:', items);
       console.log('Featured items (popular/best sellers):', featured);
-      console.log('Menu items length:', data.data.length);
+      console.log('Menu items length:', items.length);
       
       setFeaturedItems(featured);
       setLoading(false);
     } catch (err) {
       console.error('Failed to load menu items', err);
+      setMenuItems([]);
+      setFeaturedItems([]);
       setLoading(false);
     }
   };
@@ -103,7 +106,7 @@ const App = () => {
   };
 
   // Filter menu items based on search and category
-  const filteredItems = menuItems.filter(item => 
+  const filteredItems = (menuItems || []).filter(item => 
     (searchQuery ? 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) :

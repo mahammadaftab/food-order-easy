@@ -80,12 +80,32 @@ app.use('/api/v1/gemini', gemini);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  const error = app.get('env') === 'development' ? err : {};
-  const status = err.status || 500;
-  
+  let error = { ...err };
+  error.message = err.message;
+
   // Log the error for debugging
   console.error('Global error handler:', err);
-  
+
+  // Mongoose bad ObjectId (CastError)
+  if (err.name === 'CastError') {
+    const message = 'Resource not found';
+    error = { message, status: 404 };
+  }
+
+  // Mongoose duplicate key (E11000)
+  if (err.code === 11000) {
+    const message = 'Email already registered';
+    error = { message, status: 400 };
+  }
+
+  // Mongoose validation error
+  if (err.name === 'ValidationError') {
+    const message = Object.values(err.errors).map(val => val.message).join(', ');
+    error = { message, status: 400 };
+  }
+
+  const status = error.status || err.statusCode || 500;
+
   return res.status(status).json({
     success: false,
     error: {

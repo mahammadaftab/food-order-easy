@@ -25,7 +25,7 @@ const fixImageUrls = async () => {
     
     // Update each menu item with full URL
     for (const item of menuItems) {
-      const fullUrl = `http://localhost:5002${item.image}`;
+      const fullUrl = `https://food-order-easy-backend.onrender.com${item.image}`;
       await MenuItem.findByIdAndUpdate(item._id, { image: fullUrl });
       console.log(`Updated ${item.name}: ${item.image} -> ${fullUrl}`);
     }

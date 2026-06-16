@@ -25,7 +25,8 @@ const ContactMessages = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5001/api/v1/contact', config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.get(`${baseURL}/contact`, config);
       setMessages(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -43,7 +44,8 @@ const ContactMessages = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5001/api/v1/contact/stats', config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.get(`${baseURL}/contact/stats`, config);
       setStats(res.data.data);
     } catch (err) {
       console.error('Failed to load stats', err);
@@ -68,7 +70,8 @@ const ContactMessages = () => {
           }
         };
 
-        await axios.delete(`http://localhost:5001/api/v1/contact/${id}`, config);
+        const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+        await axios.delete(`${baseURL}/contact/${id}`, config);
         loadMessages();
         loadStats();
         if (selectedMessage && selectedMessage._id === id) {
@@ -89,7 +92,8 @@ const ContactMessages = () => {
         }
       };
 
-      await axios.put(`http://localhost:5001/api/v1/contact/${id}`, statusData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      await axios.put(`${baseURL}/contact/${id}`, statusData, config);
       loadMessages();
       loadStats();
     } catch (err) {
@@ -118,7 +122,8 @@ const ContactMessages = () => {
         replyMessage: replyMessage
       };
 
-      await axios.put(`http://localhost:5001/api/v1/contact/${selectedMessage._id}`, replyData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      await axios.put(`${baseURL}/contact/${selectedMessage._id}`, replyData, config);
       
       // Reset reply form
       setReplyMessage('');

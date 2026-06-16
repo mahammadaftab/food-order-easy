@@ -21,7 +21,8 @@ const ManageItems = () => {
       };
 
       // Use the admin endpoint that requires authentication
-      const res = await axios.get('http://localhost:5001/api/v1/menu/admin', config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.get(`${baseURL}/menu/admin`, config);
       setMenuItems(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -40,7 +41,8 @@ const ManageItems = () => {
           }
         };
 
-        await axios.delete(`http://localhost:5001/api/v1/menu/${id}`, config);
+        const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+        await axios.delete(`${baseURL}/menu/${id}`, config);
         // Remove item from state
         setMenuItems(menuItems.filter(item => item._id !== id));
       } catch (err) {

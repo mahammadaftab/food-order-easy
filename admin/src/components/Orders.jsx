@@ -21,7 +21,8 @@ const Orders = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5001/api/v1/orders', config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.get(`${baseURL}/orders`, config);
       setOrders(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -40,7 +41,8 @@ const Orders = () => {
       };
 
       // Update order status using the new endpoint
-      const res = await axios.put(`http://localhost:5001/api/v1/orders/${orderId}/status`, { status }, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.put(`${baseURL}/orders/${orderId}/status`, { status }, config);
       const updatedOrder = res.data.data;
 
       // Update order status in state

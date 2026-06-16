@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FaUser, FaLock, FaEnvelope, FaPhone, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext.jsx';
@@ -15,7 +15,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [notification, setNotification] = useState(null);
-  const { register, loading } = useContext(AppContext);
+  const { register, loading, error, setError } = useContext(AppContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,6 +25,19 @@ const Register = () => {
       [name]: value
     }));
   };
+
+  const handleInputChange = (e) => {
+    if (error) {
+      setError(null);
+    }
+    handleChange(e);
+  };
+
+  useEffect(() => {
+    return () => {
+      setError(null);
+    };
+  }, [setError]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,6 +83,13 @@ const Register = () => {
           <p className="text-amber-100/80 mt-2">Join our foodie community</p>
         </div>
 
+        {/* Display specific error messages */}
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block mb-2 font-medium">Full Name</label>
@@ -81,7 +101,7 @@ const Register = () => {
                 type="text"
                 name="name"
                 value={userData.name}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="Enter your full name"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
@@ -99,7 +119,7 @@ const Register = () => {
                 type="email"
                 name="email"
                 value={userData.email}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="your.email@example.com"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
@@ -117,7 +137,7 @@ const Register = () => {
                 type="tel"
                 name="phone"
                 value={userData.phone}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="+1 (123) 456-7890"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-4 py-3"
@@ -135,7 +155,7 @@ const Register = () => {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={userData.password}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="Create a password"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-12 py-3"
@@ -160,7 +180,7 @@ const Register = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={userData.confirmPassword}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 placeholder="Confirm your password"
                 required
                 className="w-full rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 pl-10 pr-12 py-3"

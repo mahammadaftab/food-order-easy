@@ -41,7 +41,8 @@ const CompanyProfile = () => {
         }
       };
 
-      const res = await axios.get('http://localhost:5001/api/v1/company-profile', config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.get(`${baseURL}/company-profile`, config);
       
       // Set form data with existing profile data
       setFormData({
@@ -134,7 +135,8 @@ const CompanyProfile = () => {
       };
       
       console.log('Uploading image:', imageFile.name);
-      const res = await axios.post('http://localhost:5001/api/v1/upload', formData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      const res = await axios.post(`${baseURL}/upload`, formData, config);
       console.log('Upload response:', res.data);
       return res.data.data;
     } catch (error) {
@@ -214,7 +216,8 @@ const CompanyProfile = () => {
         features: formData.features
       };
 
-      await axios.put('http://localhost:5001/api/v1/company-profile', submitData, config);
+      const baseURL = import.meta.env.VITE_API_URL || 'https://food-order-easy-backend.onrender.com/api/v1';
+      await axios.put(`${baseURL}/company-profile`, submitData, config);
       
       setSuccess('Company profile updated successfully!');
     } catch (err) {
